@@ -1,0 +1,74 @@
+======================================================================
+  POLYMARKET BOT — CALIBRATION REPORT  (2026-05-28 21:04:14)
+  Log files: bot.log, bot.log.1, bot.log.2, bot.log.3, bot.log.4, bot.log.5
+======================================================================
+
+── 1. TOTALS ─────────────────────────────────────────────────────────
+   Total signals generated   : 10,194
+   Total CALIBRATION_ACCEPTED : 20
+   Total CALIBRATION_REJECTED : 107
+   Acceptance ratio           : 0.20%
+
+── 2. PAPER TRADING ──────────────────────────────────────────────────
+   Paper trades executed      : 1
+   Paper PnL (latest snapshot): +0.0000
+
+── 3. TOP REJECTION REASONS ──────────────────────────────────────────
+   [    42] ( 39.3%)  SPREAD_TOO_WIDE
+   [    37] ( 34.6%)  LOW_LIQUIDITY
+   [    28] ( 26.2%)  RR_REJECT
+
+── 4. TOP ACCEPTED SIGNALS (by RR) ───────────────────────────────────
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+
+── 5. TOP NEAR-MISS REJECTED SIGNALS (closest to passing) ────────────
+   token=79397895660526576528...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=79397895660526576528...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=79397895660526576528...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=79397895660526576528...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=84204843763363692452...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=84204843763363692452...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=78433024518676680431...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=78433024518676680431...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=78433024518676680431...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+   token=78433024518676680431...   RR=0.500  reason=RR_BELOW_THRESHOLD: delta 0.0250 < min 0.0250
+
+── 6. TRADES SAVED BY CALIBRATION CHANGES ───────────────────────────
+   Noise / low-EV rejections  : 37
+   Zombie / spread rejections : 0
+   Total protected rejections : 37
+
+── 7. COMPARISON VS PREVIOUS CONFIG ──────────────────────────────────
+   Assumed prior acceptance rate : 5.0%
+   Current acceptance rate       : 0.20%
+   Trade frequency change        : -4.8%
+   Avg RR of accepted signals    : 1.735  (target ≥ 0.50)
+
+── 8. CALIBRATION STATUS ─────────────────────────────────────────────
+   OVER-FILTERED — acceptance < 2%. Strategy is too conservative; consider relaxing thresholds.
+
+── 9. VIABILITY ASSESSMENT ───────────────────────────────────────────
+   Neutral — 1 paper trades, PnL=0.0000. Not enough data yet.
+
+── 10. HOURLY SNAPSHOTS ──────────────────────────────────────────────
+   [ 1] gen=   8  acc=  1  trades= 0  ratio=12.5%  rejections=[none]
+   [ 2] gen=  10  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [ 3] gen=   9  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [ 4] gen=  20  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [ 5] gen=   4  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [ 6] gen=   5  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [ 7] gen=   5  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [ 8] gen=   2  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [ 9] gen=   9  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+   [10] gen=  20  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+
+======================================================================

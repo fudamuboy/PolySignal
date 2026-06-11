@@ -1,0 +1,1520 @@
+{
+  "top_liquidity": [
+    {
+      "title": "Will Iraq win the 2026 FIFA World Cup?",
+      "slug": "will-iraq-win-the-2026-fifa-world-cup",
+      "conditionId": "0x51e8c8df709aa78f64d2d9324d9d2556270f81e3966ade308099e5338bb4e4c9",
+      "spread": 0.001,
+      "liquidity": 11807033.89612,
+      "volume": 10574315.234,
+      "category": "Iraq",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Panama win the 2026 FIFA World Cup?",
+      "slug": "will-team-z-win-the-2026-fifa-world-cup-316",
+      "conditionId": "0x9779c09fd4dd0a1c82dd82618269c2aa5669d91305293b396d1e0b8a166b566e",
+      "spread": 0.001,
+      "liquidity": 11729357.78612,
+      "volume": 18006.0,
+      "category": "Panama",
+      "quality_score": 61.42
+    },
+    {
+      "title": "Will Haiti win the 2026 FIFA World Cup?",
+      "slug": "will-haiti-win-the-2026-fifa-world-cup",
+      "conditionId": "0x506f80bcf76bc75e6b31a250e2d754f347c4c231665326931d58bdb339ba1913",
+      "spread": 0.001,
+      "liquidity": 11614353.80108,
+      "volume": 10070931.973000003,
+      "category": "Haiti",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Qatar win the 2026 FIFA World Cup?",
+      "slug": "will-qatar-win-the-2026-fifa-world-cup",
+      "conditionId": "0x4fe305a2ae995a52ff278895344895fe587b4fec3d5f04347b4dbf5e99bce99c",
+      "spread": 0.001,
+      "liquidity": 11472277.80883,
+      "volume": 10119925.311999997,
+      "category": "Qatar",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Bosnia-Herzegovina win the 2026 FIFA World Cup?",
+      "slug": "will-bosnia-herzegovina-win-the-2026-fifa-world-cup",
+      "conditionId": "0xbce6698c9a61376c0709a2a724a9cf0dd0236d8dea882533073b6bb062efbee0",
+      "spread": 0.001,
+      "liquidity": 11392946.6811,
+      "volume": 573184.6426619998,
+      "category": "Bosnia-Herzegovina",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Jordan win the 2026 FIFA World Cup?",
+      "slug": "will-jordan-win-the-2026-fifa-world-cup-233",
+      "conditionId": "0x33a87d02fa01e958929385c74b8627d32cc4474e9ebd312d268865c5207147fa",
+      "spread": 0.001,
+      "liquidity": 11304906.27274,
+      "volume": 19830.97,
+      "category": "Jordan",
+      "quality_score": 61.57
+    },
+    {
+      "title": "Will Tunisia win the 2026 FIFA World Cup?",
+      "slug": "will-tunisia-win-the-2026-fifa-world-cup-165",
+      "conditionId": "0xff0cfa9506cfa95759e4c7591654195bd26e3011f9882b51439135e04f2b69f1",
+      "spread": 0.001,
+      "liquidity": 11177110.61219,
+      "volume": 569902.9739999996,
+      "category": "Tunisia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Cura\u00e7ao win the 2026 FIFA World Cup?",
+      "slug": "will-curaao-win-the-2026-fifa-world-cup",
+      "conditionId": "0xdb4b2f370c3d0e996fbb32213c87aa5402936e3d4882432b6738e2f5661b79a6",
+      "spread": 0.001,
+      "liquidity": 11054854.13915,
+      "volume": 61856.01,
+      "category": "Cura\u00e7ao",
+      "quality_score": 64.93
+    },
+    {
+      "title": "Will Cape Verde win the 2026 FIFA World Cup?",
+      "slug": "will-cape-verde-win-the-2026-fifa-world-cup",
+      "conditionId": "0x3bc69cb672591e4fcd2ef856b64b219a906e15d4601b50066ac81a446574dfaf",
+      "spread": 0.001,
+      "liquidity": 11001262.43208,
+      "volume": 10806870.272,
+      "category": "Cape Verde",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will New Zealand win the 2026 FIFA World Cup?",
+      "slug": "will-new-zealand-win-the-2026-fifa-world-cup-635",
+      "conditionId": "0x9e5f9d8c384f8fe368b195fa9a780be58643dff7360588a4e577012df8af00a7",
+      "spread": 0.001,
+      "liquidity": 10906032.63132,
+      "volume": 9267731.352,
+      "category": "New Zealand",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Algeria win the 2026 FIFA World Cup?",
+      "slug": "will-algeria-win-the-2026-fifa-world-cup",
+      "conditionId": "0x5a59d269c2b5108cd2f64c624e46ee2c8b5cfd88b882582565f927918315b6aa",
+      "spread": 0.001,
+      "liquidity": 10679266.05699,
+      "volume": 524126.876,
+      "category": "Algeria",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Australia win the 2026 FIFA World Cup?",
+      "slug": "will-australia-win-the-2026-fifa-world-cup-816",
+      "conditionId": "0x098e2be3df8ab529940c567819f8ef007cf007820e9d627642a5bbfaa42af372",
+      "spread": 0.001,
+      "liquidity": 10410973.02866,
+      "volume": 370128.1870000004,
+      "category": "Australia",
+      "quality_score": 89.59
+    },
+    {
+      "title": "Will Saudi Arabia win the 2026 FIFA World Cup?",
+      "slug": "will-saudi-arabia-win-the-2026-fifa-world-cup",
+      "conditionId": "0x3fb8a8de2ac275882d72b2c4f22d41776fcf033f9e413a77a84dd395c0d5257c",
+      "spread": 0.001,
+      "liquidity": 10394334.13383,
+      "volume": 8100680.223999998,
+      "category": "Saudi Arabia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Canada win the 2026 FIFA World Cup?",
+      "slug": "will-canada-win-the-2026-fifa-world-cup-755",
+      "conditionId": "0x67443cb1ffb2bf180f7df5b6ca7adff63f7e8e933c7e41405ba118f3e9f8befb",
+      "spread": 0.001,
+      "liquidity": 10112766.43111,
+      "volume": 681518.4736129995,
+      "category": "Canada",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ghana win the 2026 FIFA World Cup?",
+      "slug": "will-ghana-win-the-2026-fifa-world-cup",
+      "conditionId": "0x881a3ffa618b6ae0ab95a5637e310afb1afc2d99c921bfe3235b15eccfce0344",
+      "spread": 0.001,
+      "liquidity": 9691236.51187,
+      "volume": 647852.8773289997,
+      "category": "Ghana",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Czechia win the 2026 FIFA World Cup?",
+      "slug": "will-czechia-win-the-2026-fifa-world-cup",
+      "conditionId": "0x5e614739363bbfc399469102c600e4e8260032d41e59e0bc12ebc0e71231642d",
+      "spread": 0.001,
+      "liquidity": 9093748.33877,
+      "volume": 580440.5004969995,
+      "category": "Czechia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Scotland win the 2026 FIFA World Cup?",
+      "slug": "will-scotland-win-the-2026-fifa-world-cup",
+      "conditionId": "0xf950740bc71136155d6525cc0528a582c81f88812bff227803190c32ca25f54d",
+      "spread": 0.001,
+      "liquidity": 8951790.26743,
+      "volume": 1186268.4138179997,
+      "category": "Scotland",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Egypt win the 2026 FIFA World Cup?",
+      "slug": "will-egypt-win-the-2026-fifa-world-cup",
+      "conditionId": "0x7412d284c8f63791fec807f9b1f61c6fe61163621775a3dc8686cd2575272abe",
+      "spread": 0.001,
+      "liquidity": 8514826.52151,
+      "volume": 631308.1664949998,
+      "category": "Egypt",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will South Africa win the 2026 FIFA World Cup?",
+      "slug": "will-south-africa-win-the-2026-fifa-world-cup",
+      "conditionId": "0x233ce0c3969a5cd5079287f16fcd283be7c1db82263e08697f85dbe1b4d2113c",
+      "spread": 0.001,
+      "liquidity": 8392144.10333,
+      "volume": 49944.8,
+      "category": "South Africa",
+      "quality_score": 63.98
+    },
+    {
+      "title": "Will Paraguay win the 2026 FIFA World Cup?",
+      "slug": "will-paraguay-win-the-2026-fifa-world-cup-967",
+      "conditionId": "0x675bba4df50fd123f7fbfbafa67e9b75f4092d85ce0f9148ce78fc945964c856",
+      "spread": 0.001,
+      "liquidity": 8270881.63928,
+      "volume": 708145.7099929998,
+      "category": "Paraguay",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Uzbekistan win the 2026 FIFA World Cup?",
+      "slug": "will-uzbekistan-win-the-2026-fifa-world-cup-773",
+      "conditionId": "0x965ebc5d79eb1ec02cad67245a44b9e45b33359018f013fb6cf81d5bbf7bcc8d",
+      "spread": 0.001,
+      "liquidity": 8027148.79888,
+      "volume": 6580214.808,
+      "category": "Uzbekistan",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Sweden win the 2026 FIFA World Cup?",
+      "slug": "will-sweden-win-the-2026-fifa-world-cup",
+      "conditionId": "0xd0dbdc94b28c5cffeef64ed6b13e5f0f2324fb177e5ffaa634b48c88fe18d5e7",
+      "spread": 0.001,
+      "liquidity": 7884034.14904,
+      "volume": 1101305.3784929996,
+      "category": "Sweden",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Uruguay win the 2026 FIFA World Cup?",
+      "slug": "will-uruguay-win-the-2026-fifa-world-cup-932",
+      "conditionId": "0x7876851632c295043c66536150a304cb785abdf712ba8489d298c6e6926be106",
+      "spread": 0.001,
+      "liquidity": 7560096.86561,
+      "volume": 2899590.136509001,
+      "category": "Uruguay",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Iran win the 2026 FIFA World Cup?",
+      "slug": "will-iran-win-the-2026-fifa-world-cup-788",
+      "conditionId": "0x84edef36bded182da6a395ac6c785dba8f3e09b6c5ad041385b2042536cbef25",
+      "spread": 0.001,
+      "liquidity": 7281445.15851,
+      "volume": 508609.3269999998,
+      "category": "Iran",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Colombia win the 2026 FIFA World Cup?",
+      "slug": "will-colombia-win-the-2026-fifa-world-cup-734",
+      "conditionId": "0xe99cc59f32b10d23acf196d1a0e8264ea30fca198428acadd3464b06ff60e771",
+      "spread": 0.001,
+      "liquidity": 6106300.10232,
+      "volume": 724657.2565049994,
+      "category": "Colombia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will USA win the 2026 FIFA World Cup?",
+      "slug": "will-usa-win-the-2026-fifa-world-cup-467",
+      "conditionId": "0xcdb1f0400949238a63d3e88243d2ada08cd9c2a71985ced9f0cfd5e66354cf90",
+      "spread": 0.001,
+      "liquidity": 6078306.75837,
+      "volume": 1006508.8161339997,
+      "category": "USA",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Senegal win the 2026 FIFA World Cup?",
+      "slug": "will-senegal-win-the-2026-fifa-world-cup",
+      "conditionId": "0x6972edb1b3f8cd8192651a665fc424dff846efe1c4a2376f628d4b20c704144c",
+      "spread": 0.001,
+      "liquidity": 5890108.3193,
+      "volume": 644663.9716849998,
+      "category": "Senegal",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ecuador win the 2026 FIFA World Cup?",
+      "slug": "will-ecuador-win-the-2026-fifa-world-cup-986",
+      "conditionId": "0xbaf7780f9059e34b84301fd411f8dc573b4d56adfe6e0cda33daf304b1438da4",
+      "spread": 0.001,
+      "liquidity": 5541188.76976,
+      "volume": 651975.37499,
+      "category": "Ecuador",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ivory Coast win the 2026 FIFA World Cup?",
+      "slug": "will-ivory-coast-win-the-2026-fifa-world-cup",
+      "conditionId": "0x289568d555ec620ed6fa33c936c5f42649d3a2e30748a1daf7079f42453fbea4",
+      "spread": 0.001,
+      "liquidity": 5255850.06418,
+      "volume": 2630420.945142988,
+      "category": "Ivory Coast",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will South Korea win the 2026 FIFA World Cup?",
+      "slug": "will-south-korea-win-the-2026-fifa-world-cup-485",
+      "conditionId": "0x65307f30dce84ac35e41813035d3c04933da830dc4efbbb2fcdc4b282700ef3b",
+      "spread": 0.001,
+      "liquidity": 5069096.27147,
+      "volume": 730525.0833139995,
+      "category": "South Korea",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Belgium win the 2026 FIFA World Cup?",
+      "slug": "will-belgium-win-the-2026-fifa-world-cup-358",
+      "conditionId": "0x32cfa52198e85e070d1b17d1b53c5c3a6aaae7736cdc33fa6aa04d353f0c2811",
+      "spread": 0.001,
+      "liquidity": 4247742.06571,
+      "volume": 674999.599229,
+      "category": "Belgium",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Austria win the 2026 FIFA World Cup?",
+      "slug": "will-austria-win-the-2026-fifa-world-cup",
+      "conditionId": "0xfe230d510eaf545198c0d62bb17871e5fe8989f1b19aa54c0c062b858360987c",
+      "spread": 0.001,
+      "liquidity": 3646975.76179,
+      "volume": 614901.6352559996,
+      "category": "Austria",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Congo DR win the 2026 FIFA World Cup?",
+      "slug": "will-congo-dr-win-the-2026-fifa-world-cup",
+      "conditionId": "0xcd836ec4d94b8a4ddc5713d80fe9db245d2fb4796eaf12337974da1b4e96100d",
+      "spread": 0.001,
+      "liquidity": 3316983.30742,
+      "volume": 83073.75,
+      "category": "Congo DR",
+      "quality_score": 66.63
+    },
+    {
+      "title": "Will Kim Kardashian win the 2028 Democratic presidential nomination?",
+      "slug": "will-kim-kardashian-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x0f8ef3cc906ba7ba94a44724738df44bdd5f73e59e40c9c8b4ff8569e349643c",
+      "spread": 0.001,
+      "liquidity": 3135030.62798,
+      "volume": 23171.621647999993,
+      "category": "Kim Kardashian",
+      "quality_score": 61.83
+    },
+    {
+      "title": "Will Hunter Biden win the 2028 Democratic presidential nomination?",
+      "slug": "will-person-a-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x1945a8b23e313ed7423b6b6fd556f9ab5578900376b565a61dc480a5f4f35d21",
+      "spread": 0.001,
+      "liquidity": 2726928.57426,
+      "volume": 32891.32814200002,
+      "category": "Hunter Biden",
+      "quality_score": 62.61
+    },
+    {
+      "title": "Will Jasmine Crockett win the 2028 Democratic presidential nomination?",
+      "slug": "will-jasmine-crockett-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x3cd6e52603d80ddbbdac9b1a4d43f9b7faa6aae4fae4d0fdfad3bd58454da7d3",
+      "spread": 0.001,
+      "liquidity": 2638611.33498,
+      "volume": 25637.351474000006,
+      "category": "Jasmine Crockett",
+      "quality_score": 62.03
+    },
+    {
+      "title": "Will Croatia win the 2026 FIFA World Cup?",
+      "slug": "will-croatia-win-the-2026-fifa-world-cup",
+      "conditionId": "0xe5bd80313b8859e3f5761568ac9498866ea9d4419e4d1b6a877a9a9bd2754cb4",
+      "spread": 0.001,
+      "liquidity": 2567345.22381,
+      "volume": 1064689.3304499988,
+      "category": "Croatia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will MrBeast win the 2028 Democratic presidential nomination?",
+      "slug": "will-mrbeast-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0xc44edcfdedb422bae8ff1803e2178d1ee025fc41efd81400ccbede709e018841",
+      "spread": 0.001,
+      "liquidity": 2509500.50574,
+      "volume": 16268.163692000007,
+      "category": "MrBeast",
+      "quality_score": 61.28
+    },
+    {
+      "title": "Will LeBron James win the 2028 Democratic presidential nomination?",
+      "slug": "will-lebron-james-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x8b203037c7c0e21b500314f8398d2a8ea294b7ce1f4f9185f426425a3505bc45",
+      "spread": 0.001,
+      "liquidity": 2463140.14166,
+      "volume": 36444.769973,
+      "category": "LeBron James",
+      "quality_score": 62.9
+    },
+    {
+      "title": "Will Turkiye win the 2026 FIFA World Cup?",
+      "slug": "will-turkiye-win-the-2026-fifa-world-cup",
+      "conditionId": "0x106ccc4508432a065a67394837d4c2c529a8d77ed69fa3ba90b81eedf5236598",
+      "spread": 0.001,
+      "liquidity": 2446671.57985,
+      "volume": 4285828.693090003,
+      "category": "Turkiye",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Zohran Mamdani win the 2028 Democratic presidential nomination?",
+      "slug": "will-zohran-mamdani-win-the-2028-democratic-presidential-nomination-445",
+      "conditionId": "0x3535fb2f4aef6619dde8b367cb5e5d209526bb496d5d9778428c58a0252435e3",
+      "spread": 0.001,
+      "liquidity": 2404334.81262,
+      "volume": 35710.398691999995,
+      "category": "Zohran Mamdani",
+      "quality_score": 62.84
+    },
+    {
+      "title": "Will Beto O\u2019Rourke win the 2028 Democratic presidential nomination?",
+      "slug": "will-beto-orourke-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x8ecd1d15e521b7d1020ad5596cc981c8764e9dcfbc3648f582e1a5138aee7185",
+      "spread": 0.001,
+      "liquidity": 2400426.00776,
+      "volume": 15385.151645999997,
+      "category": "Beto O\u2019Rourke",
+      "quality_score": 61.21
+    },
+    {
+      "title": "Will George Clooney win the 2028 Democratic presidential nomination?",
+      "slug": "will-george-clooney-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x822e61527476cabf98927e3aad385c5ecdae7086f945535f2c1fd9ae8dbfa46e",
+      "spread": 0.001,
+      "liquidity": 2333363.65833,
+      "volume": 44325.021647,
+      "category": "George Clooney",
+      "quality_score": 63.53
+    },
+    {
+      "title": "Will Morocco win the 2026 FIFA World Cup?",
+      "slug": "will-morocco-win-the-2026-fifa-world-cup-464",
+      "conditionId": "0x37a6de1b21803e5f3fb1965116218215d79963af4f7e51659696366267a63a03",
+      "spread": 0.001,
+      "liquidity": 2327814.12153,
+      "volume": 1376171.634811,
+      "category": "Morocco",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Phil Murphy win the 2028 Democratic presidential nomination?",
+      "slug": "will-phil-murphy-win-the-2028-democratic-presidential-nomination-611",
+      "conditionId": "0x29283b56d3eec6d1d89fff51793d9d2e01579d2379b1d3e9ebda175d3561e809",
+      "spread": 0.001,
+      "liquidity": 2258376.13756,
+      "volume": 36412.692810000015,
+      "category": "Phil Murphy",
+      "quality_score": 62.89
+    },
+    {
+      "title": "Will LeBron James win the 2028 US Presidential Election?",
+      "slug": "will-lebron-james-win-the-2028-us-presidential-election",
+      "conditionId": "0x836b850fc838195374862551a36f1c8691d96ff01e58b0a071f0fc1a0e357fb1",
+      "spread": 0.001,
+      "liquidity": 2245943.87663,
+      "volume": 24827.816456000015,
+      "category": "LeBron James",
+      "quality_score": 61.97
+    },
+    {
+      "title": "Will Hillary Clinton win the 2028 Democratic presidential nomination?",
+      "slug": "will-hillary-clinton-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x663b88d3a8f2341bb8d878709dc78632bcaf7512e577bd15521e5d8ed933efbc",
+      "spread": 0.001,
+      "liquidity": 2171308.95683,
+      "volume": 116592.27025199999,
+      "category": "Hillary Clinton",
+      "quality_score": 69.31
+    },
+    {
+      "title": "Will Tim Walz win the 2028 Democratic presidential nomination?",
+      "slug": "will-tim-walz-win-the-2028-democratic-presidential-nomination-475",
+      "conditionId": "0x3265b10daeb30dbcc3214bd02e488551d0a5d3028392f4152e4750b943fbfc91",
+      "spread": 0.001,
+      "liquidity": 2142162.20954,
+      "volume": 31265.27647800001,
+      "category": "Tim Walz",
+      "quality_score": 62.48
+    },
+    {
+      "title": "Will Barack Obama win the 2028 Democratic presidential nomination?",
+      "slug": "will-barack-obama-win-the-2028-democratic-presidential-nomination-265",
+      "conditionId": "0x88d67705780a3d922317ecb0c78a947a306174d0510df2ae89394d5abfb28206",
+      "spread": 0.001,
+      "liquidity": 2133504.92939,
+      "volume": 152411.198123,
+      "category": "Barack Obama",
+      "quality_score": 72.17
+    },
+    {
+      "title": "Will Kim Kardashian win the 2028 Republican presidential nomination?",
+      "slug": "will-kim-kardashian-win-the-2028-republican-presidential-nomination",
+      "conditionId": "0x414378275cb214b747245942be889ee1e077c56d1c00eb4d726629c95f22b5a5",
+      "spread": 0.001,
+      "liquidity": 2069743.94289,
+      "volume": 774.48325,
+      "category": "Kim Kardashian",
+      "quality_score": 60.04
+    }
+  ],
+  "top_volume": [
+    {
+      "title": "Will Cape Verde win the 2026 FIFA World Cup?",
+      "slug": "will-cape-verde-win-the-2026-fifa-world-cup",
+      "conditionId": "0x3bc69cb672591e4fcd2ef856b64b219a906e15d4601b50066ac81a446574dfaf",
+      "spread": 0.001,
+      "liquidity": 11001262.43208,
+      "volume": 10806870.272,
+      "category": "Cape Verde",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Iraq win the 2026 FIFA World Cup?",
+      "slug": "will-iraq-win-the-2026-fifa-world-cup",
+      "conditionId": "0x51e8c8df709aa78f64d2d9324d9d2556270f81e3966ade308099e5338bb4e4c9",
+      "spread": 0.001,
+      "liquidity": 11807033.89612,
+      "volume": 10574315.234,
+      "category": "Iraq",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Qatar win the 2026 FIFA World Cup?",
+      "slug": "will-qatar-win-the-2026-fifa-world-cup",
+      "conditionId": "0x4fe305a2ae995a52ff278895344895fe587b4fec3d5f04347b4dbf5e99bce99c",
+      "spread": 0.001,
+      "liquidity": 11472277.80883,
+      "volume": 10119925.311999997,
+      "category": "Qatar",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Haiti win the 2026 FIFA World Cup?",
+      "slug": "will-haiti-win-the-2026-fifa-world-cup",
+      "conditionId": "0x506f80bcf76bc75e6b31a250e2d754f347c4c231665326931d58bdb339ba1913",
+      "spread": 0.001,
+      "liquidity": 11614353.80108,
+      "volume": 10070931.973000003,
+      "category": "Haiti",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will New Zealand win the 2026 FIFA World Cup?",
+      "slug": "will-new-zealand-win-the-2026-fifa-world-cup-635",
+      "conditionId": "0x9e5f9d8c384f8fe368b195fa9a780be58643dff7360588a4e577012df8af00a7",
+      "spread": 0.001,
+      "liquidity": 10906032.63132,
+      "volume": 9267731.352,
+      "category": "New Zealand",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Saudi Arabia win the 2026 FIFA World Cup?",
+      "slug": "will-saudi-arabia-win-the-2026-fifa-world-cup",
+      "conditionId": "0x3fb8a8de2ac275882d72b2c4f22d41776fcf033f9e413a77a84dd395c0d5257c",
+      "spread": 0.001,
+      "liquidity": 10394334.13383,
+      "volume": 8100680.223999998,
+      "category": "Saudi Arabia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Uzbekistan win the 2026 FIFA World Cup?",
+      "slug": "will-uzbekistan-win-the-2026-fifa-world-cup-773",
+      "conditionId": "0x965ebc5d79eb1ec02cad67245a44b9e45b33359018f013fb6cf81d5bbf7bcc8d",
+      "spread": 0.001,
+      "liquidity": 8027148.79888,
+      "volume": 6580214.808,
+      "category": "Uzbekistan",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Gustavo Bol\u00edvar win the 2026 Colombian presidential election?",
+      "slug": "will-gustavo-bolvar-win-the-2026-colombian-presidential-election",
+      "conditionId": "0x60084cd46b5b91797ad397f4c1ffb5d3fcec7c134b705d2796c0f571eedad3b7",
+      "spread": 0.001,
+      "liquidity": 270312.46159,
+      "volume": 5780793.794643,
+      "category": "Gustavo Bol\u00edvar (HC)",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Turkiye win the 2026 FIFA World Cup?",
+      "slug": "will-turkiye-win-the-2026-fifa-world-cup",
+      "conditionId": "0x106ccc4508432a065a67394837d4c2c529a8d77ed69fa3ba90b81eedf5236598",
+      "spread": 0.001,
+      "liquidity": 2446671.57985,
+      "volume": 4285828.693090003,
+      "category": "Turkiye",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Uruguay win the 2026 FIFA World Cup?",
+      "slug": "will-uruguay-win-the-2026-fifa-world-cup-932",
+      "conditionId": "0x7876851632c295043c66536150a304cb785abdf712ba8489d298c6e6926be106",
+      "spread": 0.001,
+      "liquidity": 7560096.86561,
+      "volume": 2899590.136509001,
+      "category": "Uruguay",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Mexico win the 2026 FIFA World Cup?",
+      "slug": "will-mexico-win-the-2026-fifa-world-cup-529",
+      "conditionId": "0x5ccfe1b69a582d2985db08a8481a0d74c314b1fce9b4711ae2efb2c6467fe6aa",
+      "spread": 0.001,
+      "liquidity": 1197073.02417,
+      "volume": 2816977.5502430005,
+      "category": "Mexico",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ivory Coast win the 2026 FIFA World Cup?",
+      "slug": "will-ivory-coast-win-the-2026-fifa-world-cup",
+      "conditionId": "0x289568d555ec620ed6fa33c936c5f42649d3a2e30748a1daf7079f42453fbea4",
+      "spread": 0.001,
+      "liquidity": 5255850.06418,
+      "volume": 2630420.945142988,
+      "category": "Ivory Coast",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Mauricio Cardenas win the 2026 Colombian presidential election?",
+      "slug": "will-mauricio-cardenas-win-the-2026-colombian-presidential-election",
+      "conditionId": "0x0622b01925e56a091f248c42fb194d3b86d58165f6647d6bcb7afc6fb4638531",
+      "spread": 0.001,
+      "liquidity": 282956.8678,
+      "volume": 2520891.7390050185,
+      "category": "Mauricio C\u00e1rdenas",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Germany win the 2026 FIFA World Cup?",
+      "slug": "will-germany-win-the-2026-fifa-world-cup-467",
+      "conditionId": "0x1595b4818eeb1ea1e0bec5de6f057218e557feee9b405a0e930d290384fa1d16",
+      "spread": 0.001,
+      "liquidity": 624368.91229,
+      "volume": 1905170.720632001,
+      "category": "Germany",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will David Luna S\u00e1nchez win the 2026 Colombian presidential election?",
+      "slug": "will-david-luna-snchez-win-the-2026-colombian-presidential-election",
+      "conditionId": "0xf63b20e72086547c789e93d744f811c20d9c0b14be0501599cd4c1c5853c9bd5",
+      "spread": 0.001,
+      "liquidity": 293066.27455,
+      "volume": 1849342.844651001,
+      "category": "David Luna S\u00e1nchez (IND)",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Juan Daniel Oviedo win the 2026 Colombian presidential election?",
+      "slug": "will-juan-daniel-oviedo-win-the-2026-colombian-presidential-election",
+      "conditionId": "0xe59f59145045f82f8408f1fc5041d33c2c2b1de8ffaf7a4c450c638f5b038079",
+      "spread": 0.001,
+      "liquidity": 320980.63723,
+      "volume": 1533419.9633820108,
+      "category": "Juan Daniel Oviedo (IND)",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Morocco win the 2026 FIFA World Cup?",
+      "slug": "will-morocco-win-the-2026-fifa-world-cup-464",
+      "conditionId": "0x37a6de1b21803e5f3fb1965116218215d79963af4f7e51659696366267a63a03",
+      "spread": 0.001,
+      "liquidity": 2327814.12153,
+      "volume": 1376171.634811,
+      "category": "Morocco",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Enrique Pe\u00f1alosa win the 2026 Colombian presidential election?",
+      "slug": "will-enrique-pealosa-win-the-2026-colombian-presidential-election",
+      "conditionId": "0xd8f77503edba0515f30d6c97da303e6d95f290ba52042d3553da5012df1c9fcb",
+      "spread": 0.001,
+      "liquidity": 252208.06341,
+      "volume": 1306598.7471760001,
+      "category": "Enrique Pe\u00f1alosa",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Roy Barreras win the 2026 Colombian presidential election?",
+      "slug": "will-roy-barreras-win-the-2026-colombian-presidential-election",
+      "conditionId": "0xd0282264ee769e9a77dc5e168cfe7966841955a4b3555485cfbddc6961198ae0",
+      "spread": 0.001,
+      "liquidity": 294604.17879,
+      "volume": 1230476.247480006,
+      "category": "Roy Barreras",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Scotland win the 2026 FIFA World Cup?",
+      "slug": "will-scotland-win-the-2026-fifa-world-cup",
+      "conditionId": "0xf950740bc71136155d6525cc0528a582c81f88812bff227803190c32ca25f54d",
+      "spread": 0.001,
+      "liquidity": 8951790.26743,
+      "volume": 1186268.4138179997,
+      "category": "Scotland",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Sweden win the 2026 FIFA World Cup?",
+      "slug": "will-sweden-win-the-2026-fifa-world-cup",
+      "conditionId": "0xd0dbdc94b28c5cffeef64ed6b13e5f0f2324fb177e5ffaa634b48c88fe18d5e7",
+      "spread": 0.001,
+      "liquidity": 7884034.14904,
+      "volume": 1101305.3784929996,
+      "category": "Sweden",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Croatia win the 2026 FIFA World Cup?",
+      "slug": "will-croatia-win-the-2026-fifa-world-cup",
+      "conditionId": "0xe5bd80313b8859e3f5761568ac9498866ea9d4419e4d1b6a877a9a9bd2754cb4",
+      "spread": 0.001,
+      "liquidity": 2567345.22381,
+      "volume": 1064689.3304499988,
+      "category": "Croatia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Abelardo de la Espriella win the 1st round of the 2026 Colombian presidential election?",
+      "slug": "will-abelardo-de-la-espriella-win-the-1st-round-of-the-2026-colombian-presidential-election",
+      "conditionId": "0xb611b3a7173f69e412b55561ed265d849e36693c248ff620d0e981c5b3f2e325",
+      "spread": 0.003,
+      "liquidity": 74955.90406,
+      "volume": 1022519.8755369995,
+      "category": "Abelardo de la Espriella",
+      "quality_score": 89.92
+    },
+    {
+      "title": "Will USA win the 2026 FIFA World Cup?",
+      "slug": "will-usa-win-the-2026-fifa-world-cup-467",
+      "conditionId": "0xcdb1f0400949238a63d3e88243d2ada08cd9c2a71985ced9f0cfd5e66354cf90",
+      "spread": 0.001,
+      "liquidity": 6078306.75837,
+      "volume": 1006508.8161339997,
+      "category": "USA",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Switzerland win the 2026 FIFA World Cup?",
+      "slug": "will-switzerland-win-the-2026-fifa-world-cup",
+      "conditionId": "0x3a26ca6425e2d98f14935670bc22cdb0744defc6f6d83c65f8c413a921c5c70c",
+      "spread": 0.001,
+      "liquidity": 1441693.0793,
+      "volume": 990355.0768359997,
+      "category": "Switzerland",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Japan win the 2026 FIFA World Cup?",
+      "slug": "will-japan-win-the-2026-fifa-world-cup-112",
+      "conditionId": "0x0189df05ed7bf84d799213b01a79571e305c03b2ac5359cfbb3a323448ba20fa",
+      "spread": 0.001,
+      "liquidity": 422273.44012,
+      "volume": 865518.7913459992,
+      "category": "Japan",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Nikki Haley win the 2028 US Presidential Election?",
+      "slug": "will-nikki-haley-win-the-2028-us-presidential-election",
+      "conditionId": "0xe0173375b7eaccb836f7b92d28a9a2d1cc69e54e5a65fae89a5d7e49aadd332e",
+      "spread": 0.001,
+      "liquidity": 1182912.34159,
+      "volume": 849457.634254,
+      "category": "Nikki Haley",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Spain win the 2026 FIFA World Cup?",
+      "slug": "will-spain-win-the-2026-fifa-world-cup-963",
+      "conditionId": "0x7976b8dbacf9077eb1453a62bcefd6ab2df199acd28aad276ff0d920d6992892",
+      "spread": 0.001,
+      "liquidity": 554416.25468,
+      "volume": 823805.123302999,
+      "category": "Spain",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Netherlands win the 2026 FIFA World Cup?",
+      "slug": "will-netherlands-win-the-2026-fifa-world-cup-739",
+      "conditionId": "0x9be56371f6a29d12769b2f196847ee825b9585ebb8bfa042136be031b081eba1",
+      "spread": 0.001,
+      "liquidity": 1328610.80004,
+      "volume": 778957.5087199996,
+      "category": "Netherlands",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will the New York Knicks win the 2026 NBA Finals?",
+      "slug": "will-the-new-york-knicks-win-the-2026-nba-finals",
+      "conditionId": "0x713641f745d71f6ec61f906237ffca3c8583f251e49384429a63ceb0ccdb2d37",
+      "spread": 0.001,
+      "liquidity": 480985.71826,
+      "volume": 776336.0003139988,
+      "category": "New York Knicks",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Juan Manuel Gal\u00e1n win the 2026 Colombian presidential election?",
+      "slug": "will-juan-manuel-galn-win-the-2026-colombian-presidential-election",
+      "conditionId": "0xb21bc2b511694c76f3ff6664836dd3561a916acf59b405b8f21f2ae8af7016fd",
+      "spread": 0.001,
+      "liquidity": 266669.22913,
+      "volume": 769065.9069090014,
+      "category": "Juan Manuel Gal\u00e1n (NL)",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Trump and Putin meet next in Russia?",
+      "slug": "will-trump-and-putin-meet-next-in-russia-594-493-482",
+      "conditionId": "0x9031561489f77ba1f89c0b963170a6853c39840e6e89a6a658a05d12b60a1ff0",
+      "spread": 0.001,
+      "liquidity": 37867.90071,
+      "volume": 738979.2920909999,
+      "category": "Russia",
+      "quality_score": 75.13
+    },
+    {
+      "title": "Will South Korea win the 2026 FIFA World Cup?",
+      "slug": "will-south-korea-win-the-2026-fifa-world-cup-485",
+      "conditionId": "0x65307f30dce84ac35e41813035d3c04933da830dc4efbbb2fcdc4b282700ef3b",
+      "spread": 0.001,
+      "liquidity": 5069096.27147,
+      "volume": 730525.0833139995,
+      "category": "South Korea",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Colombia win the 2026 FIFA World Cup?",
+      "slug": "will-colombia-win-the-2026-fifa-world-cup-734",
+      "conditionId": "0xe99cc59f32b10d23acf196d1a0e8264ea30fca198428acadd3464b06ff60e771",
+      "spread": 0.001,
+      "liquidity": 6106300.10232,
+      "volume": 724657.2565049994,
+      "category": "Colombia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Gina Raimondo win the 2028 Democratic presidential nomination?",
+      "slug": "will-gina-raimondo-win-the-2028-democratic-presidential-nomination-676",
+      "conditionId": "0xcb239105ed21a2420ba4d85090b9bc32755c56601ffdc528afd17fd6282fe930",
+      "spread": 0.001,
+      "liquidity": 1616404.03133,
+      "volume": 723571.332691,
+      "category": "Gina Raimondo",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Oprah Winfrey win the 2028 Democratic presidential nomination?",
+      "slug": "will-oprah-winfrey-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0xe06a7e94cf2fa8dc2085b7610fe16e9be1cde6654f34d365c13da1149b276c61",
+      "spread": 0.001,
+      "liquidity": 1864759.99536,
+      "volume": 718388.582118,
+      "category": "Oprah Winfrey",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Portugal win the 2026 FIFA World Cup?",
+      "slug": "will-portugal-win-the-2026-fifa-world-cup-912",
+      "conditionId": "0x4f3421fb2daf5cca7430ed8d8132463963081572d75434393a1808fdb8829fe8",
+      "spread": 0.001,
+      "liquidity": 1119533.48196,
+      "volume": 708194.0891859988,
+      "category": "Portugal",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Paraguay win the 2026 FIFA World Cup?",
+      "slug": "will-paraguay-win-the-2026-fifa-world-cup-967",
+      "conditionId": "0x675bba4df50fd123f7fbfbafa67e9b75f4092d85ce0f9148ce78fc945964c856",
+      "spread": 0.001,
+      "liquidity": 8270881.63928,
+      "volume": 708145.7099929998,
+      "category": "Paraguay",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will England win the 2026 FIFA World Cup?",
+      "slug": "will-england-win-the-2026-fifa-world-cup-937",
+      "conditionId": "0x375409bc5eeeff961e82b479caeccc20f33d15738e5bce1186d628aa3d9dfb1f",
+      "spread": 0.001,
+      "liquidity": 1456714.59365,
+      "volume": 697714.5287419988,
+      "category": "England",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Canada win the 2026 FIFA World Cup?",
+      "slug": "will-canada-win-the-2026-fifa-world-cup-755",
+      "conditionId": "0x67443cb1ffb2bf180f7df5b6ca7adff63f7e8e933c7e41405ba118f3e9f8befb",
+      "spread": 0.001,
+      "liquidity": 10112766.43111,
+      "volume": 681518.4736129995,
+      "category": "Canada",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Belgium win the 2026 FIFA World Cup?",
+      "slug": "will-belgium-win-the-2026-fifa-world-cup-358",
+      "conditionId": "0x32cfa52198e85e070d1b17d1b53c5c3a6aaae7736cdc33fa6aa04d353f0c2811",
+      "spread": 0.001,
+      "liquidity": 4247742.06571,
+      "volume": 674999.599229,
+      "category": "Belgium",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Argentina win the 2026 FIFA World Cup?",
+      "slug": "will-argentina-win-the-2026-fifa-world-cup-245",
+      "conditionId": "0x0c4cd2055d6ea89354ffddc55d6dbcef9355748112ea952fc925f3db6a5c457f",
+      "spread": 0.001,
+      "liquidity": 1151703.28829,
+      "volume": 654444.550616001,
+      "category": "Argentina",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ecuador win the 2026 FIFA World Cup?",
+      "slug": "will-ecuador-win-the-2026-fifa-world-cup-986",
+      "conditionId": "0xbaf7780f9059e34b84301fd411f8dc573b4d56adfe6e0cda33daf304b1438da4",
+      "spread": 0.001,
+      "liquidity": 5541188.76976,
+      "volume": 651975.37499,
+      "category": "Ecuador",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ghana win the 2026 FIFA World Cup?",
+      "slug": "will-ghana-win-the-2026-fifa-world-cup",
+      "conditionId": "0x881a3ffa618b6ae0ab95a5637e310afb1afc2d99c921bfe3235b15eccfce0344",
+      "spread": 0.001,
+      "liquidity": 9691236.51187,
+      "volume": 647852.8773289997,
+      "category": "Ghana",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Senegal win the 2026 FIFA World Cup?",
+      "slug": "will-senegal-win-the-2026-fifa-world-cup",
+      "conditionId": "0x6972edb1b3f8cd8192651a665fc424dff846efe1c4a2376f628d4b20c704144c",
+      "spread": 0.001,
+      "liquidity": 5890108.3193,
+      "volume": 644663.9716849998,
+      "category": "Senegal",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Iv\u00e1n Cepeda Castro win the 1st round of the 2026 Colombian presidential election?",
+      "slug": "will-ivn-cepeda-castro-win-the-1st-round-of-the-2026-colombian-presidential-election",
+      "conditionId": "0xc00920db6f5e84821a61bd31578499bbc9bd125949572b589b7a9e4b0f13bad3",
+      "spread": 0.001,
+      "liquidity": 115504.25458,
+      "volume": 638924.761076,
+      "category": "Iv\u00e1n Cepeda Castro",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Egypt win the 2026 FIFA World Cup?",
+      "slug": "will-egypt-win-the-2026-fifa-world-cup",
+      "conditionId": "0x7412d284c8f63791fec807f9b1f61c6fe61163621775a3dc8686cd2575272abe",
+      "spread": 0.001,
+      "liquidity": 8514826.52151,
+      "volume": 631308.1664949998,
+      "category": "Egypt",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Austria win the 2026 FIFA World Cup?",
+      "slug": "will-austria-win-the-2026-fifa-world-cup",
+      "conditionId": "0xfe230d510eaf545198c0d62bb17871e5fe8989f1b19aa54c0c062b858360987c",
+      "spread": 0.001,
+      "liquidity": 3646975.76179,
+      "volume": 614901.6352559996,
+      "category": "Austria",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will France win the 2026 FIFA World Cup?",
+      "slug": "will-france-win-the-2026-fifa-world-cup-924",
+      "conditionId": "0x9b6fef249040fd17e9c107955b37ac2c3e923509b6b0ff01cc463a331ddeb894",
+      "spread": 0.001,
+      "liquidity": 923892.35515,
+      "volume": 583643.7003019985,
+      "category": "France",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Czechia win the 2026 FIFA World Cup?",
+      "slug": "will-czechia-win-the-2026-fifa-world-cup",
+      "conditionId": "0x5e614739363bbfc399469102c600e4e8260032d41e59e0bc12ebc0e71231642d",
+      "spread": 0.001,
+      "liquidity": 9093748.33877,
+      "volume": 580440.5004969995,
+      "category": "Czechia",
+      "quality_score": 99.98
+    }
+  ],
+  "top_spread": [
+    {
+      "title": "Will Iraq win the 2026 FIFA World Cup?",
+      "slug": "will-iraq-win-the-2026-fifa-world-cup",
+      "conditionId": "0x51e8c8df709aa78f64d2d9324d9d2556270f81e3966ade308099e5338bb4e4c9",
+      "spread": 0.001,
+      "liquidity": 11807033.89612,
+      "volume": 10574315.234,
+      "category": "Iraq",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Panama win the 2026 FIFA World Cup?",
+      "slug": "will-team-z-win-the-2026-fifa-world-cup-316",
+      "conditionId": "0x9779c09fd4dd0a1c82dd82618269c2aa5669d91305293b396d1e0b8a166b566e",
+      "spread": 0.001,
+      "liquidity": 11729357.78612,
+      "volume": 18006.0,
+      "category": "Panama",
+      "quality_score": 61.42
+    },
+    {
+      "title": "Will Haiti win the 2026 FIFA World Cup?",
+      "slug": "will-haiti-win-the-2026-fifa-world-cup",
+      "conditionId": "0x506f80bcf76bc75e6b31a250e2d754f347c4c231665326931d58bdb339ba1913",
+      "spread": 0.001,
+      "liquidity": 11614353.80108,
+      "volume": 10070931.973000003,
+      "category": "Haiti",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Qatar win the 2026 FIFA World Cup?",
+      "slug": "will-qatar-win-the-2026-fifa-world-cup",
+      "conditionId": "0x4fe305a2ae995a52ff278895344895fe587b4fec3d5f04347b4dbf5e99bce99c",
+      "spread": 0.001,
+      "liquidity": 11472277.80883,
+      "volume": 10119925.311999997,
+      "category": "Qatar",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Bosnia-Herzegovina win the 2026 FIFA World Cup?",
+      "slug": "will-bosnia-herzegovina-win-the-2026-fifa-world-cup",
+      "conditionId": "0xbce6698c9a61376c0709a2a724a9cf0dd0236d8dea882533073b6bb062efbee0",
+      "spread": 0.001,
+      "liquidity": 11392946.6811,
+      "volume": 573184.6426619998,
+      "category": "Bosnia-Herzegovina",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Jordan win the 2026 FIFA World Cup?",
+      "slug": "will-jordan-win-the-2026-fifa-world-cup-233",
+      "conditionId": "0x33a87d02fa01e958929385c74b8627d32cc4474e9ebd312d268865c5207147fa",
+      "spread": 0.001,
+      "liquidity": 11304906.27274,
+      "volume": 19830.97,
+      "category": "Jordan",
+      "quality_score": 61.57
+    },
+    {
+      "title": "Will Tunisia win the 2026 FIFA World Cup?",
+      "slug": "will-tunisia-win-the-2026-fifa-world-cup-165",
+      "conditionId": "0xff0cfa9506cfa95759e4c7591654195bd26e3011f9882b51439135e04f2b69f1",
+      "spread": 0.001,
+      "liquidity": 11177110.61219,
+      "volume": 569902.9739999996,
+      "category": "Tunisia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Cura\u00e7ao win the 2026 FIFA World Cup?",
+      "slug": "will-curaao-win-the-2026-fifa-world-cup",
+      "conditionId": "0xdb4b2f370c3d0e996fbb32213c87aa5402936e3d4882432b6738e2f5661b79a6",
+      "spread": 0.001,
+      "liquidity": 11054854.13915,
+      "volume": 61856.01,
+      "category": "Cura\u00e7ao",
+      "quality_score": 64.93
+    },
+    {
+      "title": "Will Cape Verde win the 2026 FIFA World Cup?",
+      "slug": "will-cape-verde-win-the-2026-fifa-world-cup",
+      "conditionId": "0x3bc69cb672591e4fcd2ef856b64b219a906e15d4601b50066ac81a446574dfaf",
+      "spread": 0.001,
+      "liquidity": 11001262.43208,
+      "volume": 10806870.272,
+      "category": "Cape Verde",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will New Zealand win the 2026 FIFA World Cup?",
+      "slug": "will-new-zealand-win-the-2026-fifa-world-cup-635",
+      "conditionId": "0x9e5f9d8c384f8fe368b195fa9a780be58643dff7360588a4e577012df8af00a7",
+      "spread": 0.001,
+      "liquidity": 10906032.63132,
+      "volume": 9267731.352,
+      "category": "New Zealand",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Algeria win the 2026 FIFA World Cup?",
+      "slug": "will-algeria-win-the-2026-fifa-world-cup",
+      "conditionId": "0x5a59d269c2b5108cd2f64c624e46ee2c8b5cfd88b882582565f927918315b6aa",
+      "spread": 0.001,
+      "liquidity": 10679266.05699,
+      "volume": 524126.876,
+      "category": "Algeria",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Australia win the 2026 FIFA World Cup?",
+      "slug": "will-australia-win-the-2026-fifa-world-cup-816",
+      "conditionId": "0x098e2be3df8ab529940c567819f8ef007cf007820e9d627642a5bbfaa42af372",
+      "spread": 0.001,
+      "liquidity": 10410973.02866,
+      "volume": 370128.1870000004,
+      "category": "Australia",
+      "quality_score": 89.59
+    },
+    {
+      "title": "Will Saudi Arabia win the 2026 FIFA World Cup?",
+      "slug": "will-saudi-arabia-win-the-2026-fifa-world-cup",
+      "conditionId": "0x3fb8a8de2ac275882d72b2c4f22d41776fcf033f9e413a77a84dd395c0d5257c",
+      "spread": 0.001,
+      "liquidity": 10394334.13383,
+      "volume": 8100680.223999998,
+      "category": "Saudi Arabia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Canada win the 2026 FIFA World Cup?",
+      "slug": "will-canada-win-the-2026-fifa-world-cup-755",
+      "conditionId": "0x67443cb1ffb2bf180f7df5b6ca7adff63f7e8e933c7e41405ba118f3e9f8befb",
+      "spread": 0.001,
+      "liquidity": 10112766.43111,
+      "volume": 681518.4736129995,
+      "category": "Canada",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ghana win the 2026 FIFA World Cup?",
+      "slug": "will-ghana-win-the-2026-fifa-world-cup",
+      "conditionId": "0x881a3ffa618b6ae0ab95a5637e310afb1afc2d99c921bfe3235b15eccfce0344",
+      "spread": 0.001,
+      "liquidity": 9691236.51187,
+      "volume": 647852.8773289997,
+      "category": "Ghana",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Czechia win the 2026 FIFA World Cup?",
+      "slug": "will-czechia-win-the-2026-fifa-world-cup",
+      "conditionId": "0x5e614739363bbfc399469102c600e4e8260032d41e59e0bc12ebc0e71231642d",
+      "spread": 0.001,
+      "liquidity": 9093748.33877,
+      "volume": 580440.5004969995,
+      "category": "Czechia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Scotland win the 2026 FIFA World Cup?",
+      "slug": "will-scotland-win-the-2026-fifa-world-cup",
+      "conditionId": "0xf950740bc71136155d6525cc0528a582c81f88812bff227803190c32ca25f54d",
+      "spread": 0.001,
+      "liquidity": 8951790.26743,
+      "volume": 1186268.4138179997,
+      "category": "Scotland",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Egypt win the 2026 FIFA World Cup?",
+      "slug": "will-egypt-win-the-2026-fifa-world-cup",
+      "conditionId": "0x7412d284c8f63791fec807f9b1f61c6fe61163621775a3dc8686cd2575272abe",
+      "spread": 0.001,
+      "liquidity": 8514826.52151,
+      "volume": 631308.1664949998,
+      "category": "Egypt",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will South Africa win the 2026 FIFA World Cup?",
+      "slug": "will-south-africa-win-the-2026-fifa-world-cup",
+      "conditionId": "0x233ce0c3969a5cd5079287f16fcd283be7c1db82263e08697f85dbe1b4d2113c",
+      "spread": 0.001,
+      "liquidity": 8392144.10333,
+      "volume": 49944.8,
+      "category": "South Africa",
+      "quality_score": 63.98
+    },
+    {
+      "title": "Will Paraguay win the 2026 FIFA World Cup?",
+      "slug": "will-paraguay-win-the-2026-fifa-world-cup-967",
+      "conditionId": "0x675bba4df50fd123f7fbfbafa67e9b75f4092d85ce0f9148ce78fc945964c856",
+      "spread": 0.001,
+      "liquidity": 8270881.63928,
+      "volume": 708145.7099929998,
+      "category": "Paraguay",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Uzbekistan win the 2026 FIFA World Cup?",
+      "slug": "will-uzbekistan-win-the-2026-fifa-world-cup-773",
+      "conditionId": "0x965ebc5d79eb1ec02cad67245a44b9e45b33359018f013fb6cf81d5bbf7bcc8d",
+      "spread": 0.001,
+      "liquidity": 8027148.79888,
+      "volume": 6580214.808,
+      "category": "Uzbekistan",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Sweden win the 2026 FIFA World Cup?",
+      "slug": "will-sweden-win-the-2026-fifa-world-cup",
+      "conditionId": "0xd0dbdc94b28c5cffeef64ed6b13e5f0f2324fb177e5ffaa634b48c88fe18d5e7",
+      "spread": 0.001,
+      "liquidity": 7884034.14904,
+      "volume": 1101305.3784929996,
+      "category": "Sweden",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Uruguay win the 2026 FIFA World Cup?",
+      "slug": "will-uruguay-win-the-2026-fifa-world-cup-932",
+      "conditionId": "0x7876851632c295043c66536150a304cb785abdf712ba8489d298c6e6926be106",
+      "spread": 0.001,
+      "liquidity": 7560096.86561,
+      "volume": 2899590.136509001,
+      "category": "Uruguay",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Iran win the 2026 FIFA World Cup?",
+      "slug": "will-iran-win-the-2026-fifa-world-cup-788",
+      "conditionId": "0x84edef36bded182da6a395ac6c785dba8f3e09b6c5ad041385b2042536cbef25",
+      "spread": 0.001,
+      "liquidity": 7281445.15851,
+      "volume": 508609.3269999998,
+      "category": "Iran",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Colombia win the 2026 FIFA World Cup?",
+      "slug": "will-colombia-win-the-2026-fifa-world-cup-734",
+      "conditionId": "0xe99cc59f32b10d23acf196d1a0e8264ea30fca198428acadd3464b06ff60e771",
+      "spread": 0.001,
+      "liquidity": 6106300.10232,
+      "volume": 724657.2565049994,
+      "category": "Colombia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will USA win the 2026 FIFA World Cup?",
+      "slug": "will-usa-win-the-2026-fifa-world-cup-467",
+      "conditionId": "0xcdb1f0400949238a63d3e88243d2ada08cd9c2a71985ced9f0cfd5e66354cf90",
+      "spread": 0.001,
+      "liquidity": 6078306.75837,
+      "volume": 1006508.8161339997,
+      "category": "USA",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Senegal win the 2026 FIFA World Cup?",
+      "slug": "will-senegal-win-the-2026-fifa-world-cup",
+      "conditionId": "0x6972edb1b3f8cd8192651a665fc424dff846efe1c4a2376f628d4b20c704144c",
+      "spread": 0.001,
+      "liquidity": 5890108.3193,
+      "volume": 644663.9716849998,
+      "category": "Senegal",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ecuador win the 2026 FIFA World Cup?",
+      "slug": "will-ecuador-win-the-2026-fifa-world-cup-986",
+      "conditionId": "0xbaf7780f9059e34b84301fd411f8dc573b4d56adfe6e0cda33daf304b1438da4",
+      "spread": 0.001,
+      "liquidity": 5541188.76976,
+      "volume": 651975.37499,
+      "category": "Ecuador",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Ivory Coast win the 2026 FIFA World Cup?",
+      "slug": "will-ivory-coast-win-the-2026-fifa-world-cup",
+      "conditionId": "0x289568d555ec620ed6fa33c936c5f42649d3a2e30748a1daf7079f42453fbea4",
+      "spread": 0.001,
+      "liquidity": 5255850.06418,
+      "volume": 2630420.945142988,
+      "category": "Ivory Coast",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will South Korea win the 2026 FIFA World Cup?",
+      "slug": "will-south-korea-win-the-2026-fifa-world-cup-485",
+      "conditionId": "0x65307f30dce84ac35e41813035d3c04933da830dc4efbbb2fcdc4b282700ef3b",
+      "spread": 0.001,
+      "liquidity": 5069096.27147,
+      "volume": 730525.0833139995,
+      "category": "South Korea",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Belgium win the 2026 FIFA World Cup?",
+      "slug": "will-belgium-win-the-2026-fifa-world-cup-358",
+      "conditionId": "0x32cfa52198e85e070d1b17d1b53c5c3a6aaae7736cdc33fa6aa04d353f0c2811",
+      "spread": 0.001,
+      "liquidity": 4247742.06571,
+      "volume": 674999.599229,
+      "category": "Belgium",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Austria win the 2026 FIFA World Cup?",
+      "slug": "will-austria-win-the-2026-fifa-world-cup",
+      "conditionId": "0xfe230d510eaf545198c0d62bb17871e5fe8989f1b19aa54c0c062b858360987c",
+      "spread": 0.001,
+      "liquidity": 3646975.76179,
+      "volume": 614901.6352559996,
+      "category": "Austria",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Congo DR win the 2026 FIFA World Cup?",
+      "slug": "will-congo-dr-win-the-2026-fifa-world-cup",
+      "conditionId": "0xcd836ec4d94b8a4ddc5713d80fe9db245d2fb4796eaf12337974da1b4e96100d",
+      "spread": 0.001,
+      "liquidity": 3316983.30742,
+      "volume": 83073.75,
+      "category": "Congo DR",
+      "quality_score": 66.63
+    },
+    {
+      "title": "Will Kim Kardashian win the 2028 Democratic presidential nomination?",
+      "slug": "will-kim-kardashian-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x0f8ef3cc906ba7ba94a44724738df44bdd5f73e59e40c9c8b4ff8569e349643c",
+      "spread": 0.001,
+      "liquidity": 3135030.62798,
+      "volume": 23171.621647999993,
+      "category": "Kim Kardashian",
+      "quality_score": 61.83
+    },
+    {
+      "title": "Will Hunter Biden win the 2028 Democratic presidential nomination?",
+      "slug": "will-person-a-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x1945a8b23e313ed7423b6b6fd556f9ab5578900376b565a61dc480a5f4f35d21",
+      "spread": 0.001,
+      "liquidity": 2726928.57426,
+      "volume": 32891.32814200002,
+      "category": "Hunter Biden",
+      "quality_score": 62.61
+    },
+    {
+      "title": "Will Jasmine Crockett win the 2028 Democratic presidential nomination?",
+      "slug": "will-jasmine-crockett-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x3cd6e52603d80ddbbdac9b1a4d43f9b7faa6aae4fae4d0fdfad3bd58454da7d3",
+      "spread": 0.001,
+      "liquidity": 2638611.33498,
+      "volume": 25637.351474000006,
+      "category": "Jasmine Crockett",
+      "quality_score": 62.03
+    },
+    {
+      "title": "Will Croatia win the 2026 FIFA World Cup?",
+      "slug": "will-croatia-win-the-2026-fifa-world-cup",
+      "conditionId": "0xe5bd80313b8859e3f5761568ac9498866ea9d4419e4d1b6a877a9a9bd2754cb4",
+      "spread": 0.001,
+      "liquidity": 2567345.22381,
+      "volume": 1064689.3304499988,
+      "category": "Croatia",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will MrBeast win the 2028 Democratic presidential nomination?",
+      "slug": "will-mrbeast-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0xc44edcfdedb422bae8ff1803e2178d1ee025fc41efd81400ccbede709e018841",
+      "spread": 0.001,
+      "liquidity": 2509500.50574,
+      "volume": 16268.163692000007,
+      "category": "MrBeast",
+      "quality_score": 61.28
+    },
+    {
+      "title": "Will LeBron James win the 2028 Democratic presidential nomination?",
+      "slug": "will-lebron-james-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x8b203037c7c0e21b500314f8398d2a8ea294b7ce1f4f9185f426425a3505bc45",
+      "spread": 0.001,
+      "liquidity": 2463140.14166,
+      "volume": 36444.769973,
+      "category": "LeBron James",
+      "quality_score": 62.9
+    },
+    {
+      "title": "Will Turkiye win the 2026 FIFA World Cup?",
+      "slug": "will-turkiye-win-the-2026-fifa-world-cup",
+      "conditionId": "0x106ccc4508432a065a67394837d4c2c529a8d77ed69fa3ba90b81eedf5236598",
+      "spread": 0.001,
+      "liquidity": 2446671.57985,
+      "volume": 4285828.693090003,
+      "category": "Turkiye",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Zohran Mamdani win the 2028 Democratic presidential nomination?",
+      "slug": "will-zohran-mamdani-win-the-2028-democratic-presidential-nomination-445",
+      "conditionId": "0x3535fb2f4aef6619dde8b367cb5e5d209526bb496d5d9778428c58a0252435e3",
+      "spread": 0.001,
+      "liquidity": 2404334.81262,
+      "volume": 35710.398691999995,
+      "category": "Zohran Mamdani",
+      "quality_score": 62.84
+    },
+    {
+      "title": "Will Beto O\u2019Rourke win the 2028 Democratic presidential nomination?",
+      "slug": "will-beto-orourke-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x8ecd1d15e521b7d1020ad5596cc981c8764e9dcfbc3648f582e1a5138aee7185",
+      "spread": 0.001,
+      "liquidity": 2400426.00776,
+      "volume": 15385.151645999997,
+      "category": "Beto O\u2019Rourke",
+      "quality_score": 61.21
+    },
+    {
+      "title": "Will George Clooney win the 2028 Democratic presidential nomination?",
+      "slug": "will-george-clooney-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x822e61527476cabf98927e3aad385c5ecdae7086f945535f2c1fd9ae8dbfa46e",
+      "spread": 0.001,
+      "liquidity": 2333363.65833,
+      "volume": 44325.021647,
+      "category": "George Clooney",
+      "quality_score": 63.53
+    },
+    {
+      "title": "Will Morocco win the 2026 FIFA World Cup?",
+      "slug": "will-morocco-win-the-2026-fifa-world-cup-464",
+      "conditionId": "0x37a6de1b21803e5f3fb1965116218215d79963af4f7e51659696366267a63a03",
+      "spread": 0.001,
+      "liquidity": 2327814.12153,
+      "volume": 1376171.634811,
+      "category": "Morocco",
+      "quality_score": 99.98
+    },
+    {
+      "title": "Will Phil Murphy win the 2028 Democratic presidential nomination?",
+      "slug": "will-phil-murphy-win-the-2028-democratic-presidential-nomination-611",
+      "conditionId": "0x29283b56d3eec6d1d89fff51793d9d2e01579d2379b1d3e9ebda175d3561e809",
+      "spread": 0.001,
+      "liquidity": 2258376.13756,
+      "volume": 36412.692810000015,
+      "category": "Phil Murphy",
+      "quality_score": 62.89
+    },
+    {
+      "title": "Will LeBron James win the 2028 US Presidential Election?",
+      "slug": "will-lebron-james-win-the-2028-us-presidential-election",
+      "conditionId": "0x836b850fc838195374862551a36f1c8691d96ff01e58b0a071f0fc1a0e357fb1",
+      "spread": 0.001,
+      "liquidity": 2245943.87663,
+      "volume": 24827.816456000015,
+      "category": "LeBron James",
+      "quality_score": 61.97
+    },
+    {
+      "title": "Will Hillary Clinton win the 2028 Democratic presidential nomination?",
+      "slug": "will-hillary-clinton-win-the-2028-democratic-presidential-nomination",
+      "conditionId": "0x663b88d3a8f2341bb8d878709dc78632bcaf7512e577bd15521e5d8ed933efbc",
+      "spread": 0.001,
+      "liquidity": 2171308.95683,
+      "volume": 116592.27025199999,
+      "category": "Hillary Clinton",
+      "quality_score": 69.31
+    },
+    {
+      "title": "Will Tim Walz win the 2028 Democratic presidential nomination?",
+      "slug": "will-tim-walz-win-the-2028-democratic-presidential-nomination-475",
+      "conditionId": "0x3265b10daeb30dbcc3214bd02e488551d0a5d3028392f4152e4750b943fbfc91",
+      "spread": 0.001,
+      "liquidity": 2142162.20954,
+      "volume": 31265.27647800001,
+      "category": "Tim Walz",
+      "quality_score": 62.48
+    },
+    {
+      "title": "Will Barack Obama win the 2028 Democratic presidential nomination?",
+      "slug": "will-barack-obama-win-the-2028-democratic-presidential-nomination-265",
+      "conditionId": "0x88d67705780a3d922317ecb0c78a947a306174d0510df2ae89394d5abfb28206",
+      "spread": 0.001,
+      "liquidity": 2133504.92939,
+      "volume": 152411.198123,
+      "category": "Barack Obama",
+      "quality_score": 72.17
+    },
+    {
+      "title": "Will Kim Kardashian win the 2028 Republican presidential nomination?",
+      "slug": "will-kim-kardashian-win-the-2028-republican-presidential-nomination",
+      "conditionId": "0x414378275cb214b747245942be889ee1e077c56d1c00eb4d726629c95f22b5a5",
+      "spread": 0.001,
+      "liquidity": 2069743.94289,
+      "volume": 774.48325,
+      "category": "Kim Kardashian",
+      "quality_score": 60.04
+    }
+  ],
+  "sampled_stats": {
+    "avg_spread": 0.00478,
+    "avg_volume": 1058506.1366382297,
+    "avg_liquidity": 3488590.8027538,
+    "avg_score": 75.1397
+  },
+  "best_stats": {
+    "avg_spread": 0.00203,
+    "avg_volume": 1321688.8790922002,
+    "avg_liquidity": 3093700.4564941,
+    "avg_score": 88.55550000000001
+  }
+}

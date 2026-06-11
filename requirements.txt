@@ -1,0 +1,11 @@
+asyncio
+httpx
+pandas
+pip-install-test
+py-clob-client
+pytest
+python-dotenv
+sqlalchemy
+psycopg2-binary
+redis
+websockets==16.0

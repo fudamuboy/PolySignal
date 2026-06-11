@@ -1,0 +1,24 @@
+{
+  "old": {
+    "avg_spread": 0.0,
+    "win_rate": 0.0,
+    "profit_factor": Infinity,
+    "ev_per_trade": 0.0,
+    "realized_pnl": 0,
+    "max_drawdown": 0.0,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "completed_trips": 0
+  },
+  "new": {
+    "avg_spread": 0.5688652482269504,
+    "win_rate": 35.46099290780142,
+    "profit_factor": 1.0402723518616994,
+    "ev_per_trade": 0.007783459057243631,
+    "realized_pnl": 1.097467727071352,
+    "max_drawdown": 6.885053440229257,
+    "avg_win": 0.5669722679487184,
+    "avg_loss": -0.29946313923477547,
+    "completed_trips": 141
+  }
+}

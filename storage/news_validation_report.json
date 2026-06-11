@@ -1,0 +1,9 @@
+{
+  "events_detected": 142,
+  "mapped_markets": 3,
+  "signals_generated": 54,
+  "executed_trades": 3,
+  "win_rate": 100.0,
+  "avg_ev": 0.63928,
+  "realized_pnl": 960.0198
+}

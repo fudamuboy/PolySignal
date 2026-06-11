@@ -1,0 +1,32 @@
+{
+  "old": {
+    "avg_spread_captured": 0.01691,
+    "avg_holding_time_hours": 0.07305555555555555,
+    "completed_cycles_per_day": 576.0,
+    "capital_turnover_rate": 2.03269178,
+    "ev_per_cycle": 0.012112007641234495,
+    "ev_per_day": 6.976516401351069,
+    "realized_pnl": 0.2422401528246899,
+    "profit_factor": 1.0874043640186148,
+    "monthly_profit": 209.29549204053208,
+    "ticks": 300,
+    "completed_cycles": 20,
+    "fill_rate": 91.30434782608695,
+    "max_drawdown": 2.689786185094846
+  },
+  "new": {
+    "avg_spread_captured": 0.009645,
+    "avg_holding_time_hours": 0.0661111111111111,
+    "completed_cycles_per_day": 1144.3708609271523,
+    "capital_turnover_rate": 2.28789006,
+    "ev_per_cycle": 0.09162735528318264,
+    "ev_per_day": 104.85567544989377,
+    "realized_pnl": 1.8325471056636529,
+    "profit_factor": 1.8991399088710212,
+    "monthly_profit": 3145.670263496813,
+    "ticks": 151,
+    "completed_cycles": 20,
+    "fill_rate": 50.0,
+    "max_drawdown": 0.8626111394393803
+  }
+}

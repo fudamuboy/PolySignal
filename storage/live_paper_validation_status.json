@@ -1,0 +1,10 @@
+{
+  "elapsed_hours": 7.2,
+  "completed_paired_cycles": 48,
+  "realized_pnl": -0.6996,
+  "max_drawdown": 0.7002,
+  "leg_risk_count": 50,
+  "hedge_count": 48,
+  "failed_hedge_count": 0,
+  "capital_recycled_volume": 1343.28
+}

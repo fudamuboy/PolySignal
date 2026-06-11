@@ -1,0 +1,96 @@
+{
+  "baseline": {
+    "100": {
+      "completed_trips": 70,
+      "win_rate": 34.285714285714285,
+      "ev_per_trade": -0.019186785282889307,
+      "realized_pnl": -1.3430749698022515,
+      "max_drawdown": 5.399395083875717,
+      "profit_factor": 0.909333248705462,
+      "acceptance_rate": 19.42257217847769
+    },
+    "200": {
+      "completed_trips": 153,
+      "win_rate": 35.294117647058826,
+      "ev_per_trade": -0.008639322508150483,
+      "realized_pnl": -1.3218163437470238,
+      "max_drawdown": 4.10343915564988,
+      "profit_factor": 0.9567306863421242,
+      "acceptance_rate": 6.8361086765994745
+    },
+    "300": {
+      "completed_trips": 98,
+      "win_rate": 23.46938775510204,
+      "ev_per_trade": -0.08940935725553309,
+      "realized_pnl": -8.762117011042243,
+      "max_drawdown": 8.789726705194525,
+      "profit_factor": 0.6286403396422051,
+      "acceptance_rate": 9.082733812949641
+    },
+    "400": {
+      "completed_trips": 110,
+      "win_rate": 32.72727272727273,
+      "ev_per_trade": -0.026786511960607794,
+      "realized_pnl": -2.9465163156668575,
+      "max_drawdown": 6.608096122182133,
+      "profit_factor": 0.8702486161407755,
+      "acceptance_rate": 8.625954198473282
+    },
+    "500": {
+      "completed_trips": 68,
+      "win_rate": 35.294117647058826,
+      "ev_per_trade": 0.028540002808152883,
+      "realized_pnl": 1.940720190954396,
+      "max_drawdown": 2.7213871084922374,
+      "profit_factor": 1.1555590469800978,
+      "acceptance_rate": 16.743119266055047
+    }
+  },
+  "obi": {
+    "100": {
+      "completed_trips": 70,
+      "win_rate": 34.285714285714285,
+      "ev_per_trade": -0.019186785282889307,
+      "realized_pnl": -1.3430749698022515,
+      "max_drawdown": 5.399395083875717,
+      "profit_factor": 0.909333248705462,
+      "acceptance_rate": 19.42257217847769
+    },
+    "200": {
+      "completed_trips": 153,
+      "win_rate": 35.294117647058826,
+      "ev_per_trade": -0.008639322508150483,
+      "realized_pnl": -1.3218163437470238,
+      "max_drawdown": 4.10343915564988,
+      "profit_factor": 0.9567306863421242,
+      "acceptance_rate": 6.8361086765994745
+    },
+    "300": {
+      "completed_trips": 98,
+      "win_rate": 23.46938775510204,
+      "ev_per_trade": -0.08940935725553309,
+      "realized_pnl": -8.762117011042243,
+      "max_drawdown": 8.789726705194525,
+      "profit_factor": 0.6286403396422051,
+      "acceptance_rate": 9.082733812949641
+    },
+    "400": {
+      "completed_trips": 110,
+      "win_rate": 32.72727272727273,
+      "ev_per_trade": -0.026786511960607794,
+      "realized_pnl": -2.9465163156668575,
+      "max_drawdown": 6.608096122182133,
+      "profit_factor": 0.8702486161407755,
+      "acceptance_rate": 8.625954198473282
+    },
+    "500": {
+      "completed_trips": 68,
+      "win_rate": 35.294117647058826,
+      "ev_per_trade": 0.028540002808152883,
+      "realized_pnl": 1.940720190954396,
+      "max_drawdown": 2.7213871084922374,
+      "profit_factor": 1.1555590469800978,
+      "acceptance_rate": 16.743119266055047
+    }
+  }
+}

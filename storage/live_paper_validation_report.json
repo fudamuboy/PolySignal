@@ -1,0 +1,43 @@
+{
+  "total_signals_generated": 27204,
+  "signals_above_70": 47723,
+  "trades_executed": 87,
+  "win_rate": 50.57,
+  "ev_per_trade": 32.9668,
+  "realized_pnl": 2868.1114,
+  "max_drawdown": 10.0013,
+  "avg_hold_time_seconds": 7337.1,
+  "capital_utilization_pct": 14.95,
+  "largest_winning_trade": 738.2928,
+  "largest_losing_trade": -10.0,
+  "contributions": {
+    "PMM": {
+      "trades": 42,
+      "pnl": 0.1575
+    },
+    "OBI": {
+      "trades": 14,
+      "pnl": 2.5674
+    },
+    "Momentum": {
+      "trades": 18,
+      "pnl": 0.0
+    },
+    "Twitter_X": {
+      "trades": 0,
+      "pnl": 0
+    },
+    "News_RSS": {
+      "trades": 9,
+      "pnl": 2865.3909
+    },
+    "VolumeSpike": {
+      "trades": 0,
+      "pnl": 0
+    },
+    "Hedge": {
+      "trades": 4,
+      "pnl": -0.0045
+    }
+  }
+}

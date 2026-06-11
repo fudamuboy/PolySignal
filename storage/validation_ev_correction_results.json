@@ -1,0 +1,32 @@
+{
+  "old": {
+    "round_trips": 315,
+    "wins": 100,
+    "losses": 215,
+    "win_rate": 31.746031746031743,
+    "ev_per_trade": -0.25662992874679735,
+    "realized_pnl": -80.83842755524117,
+    "profit_factor": 0.3612860768819924,
+    "acceptance_rate": 4.247929468340903,
+    "avg_spread_captured": 9.135253164556957,
+    "avg_win": 0.45725945991858735,
+    "avg_loss": -0.5886715048702321,
+    "max_drawdown": 81.24808774505954,
+    "ticks_run": 1644
+  },
+  "new": {
+    "round_trips": 287,
+    "wins": 100,
+    "losses": 187,
+    "win_rate": 34.84320557491289,
+    "ev_per_trade": -0.22924040450830926,
+    "realized_pnl": -65.79199609388476,
+    "profit_factor": 0.4214882030072038,
+    "acceptance_rate": 7.232782029128611,
+    "avg_spread_captured": 10.00494773519164,
+    "avg_win": 0.47934286474392773,
+    "avg_loss": -0.6081619388677941,
+    "max_drawdown": 65.95183820816862,
+    "ticks_run": 1155
+  }
+}

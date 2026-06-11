@@ -1,0 +1,42 @@
+======================================================================
+  POLYMARKET BOT — CALIBRATION REPORT  (2026-06-01 12:22:15)
+  Log files: bot.log
+======================================================================
+
+── 1. TOTALS ─────────────────────────────────────────────────────────
+   Total signals generated   : 0
+   Total CALIBRATION_ACCEPTED : 0
+   Total CALIBRATION_REJECTED : 0
+   Acceptance ratio           : 0.00%
+
+── 2. PAPER TRADING ──────────────────────────────────────────────────
+   Paper trades executed      : 0
+   Paper PnL (latest snapshot): +0.0000
+
+── 3. TOP REJECTION REASONS ──────────────────────────────────────────
+   (no rejection data yet)
+
+── 4. TOP ACCEPTED SIGNALS (by RR) ───────────────────────────────────
+   (no accepted signals yet)
+
+── 5. TOP NEAR-MISS REJECTED SIGNALS (closest to passing) ────────────
+   (no near-miss data yet — near-misses only buffered at RR reject stage)
+
+── 6. TRADES SAVED BY CALIBRATION CHANGES ───────────────────────────
+   Noise / low-EV rejections  : 0
+   Zombie / spread rejections : 0
+   Total protected rejections : 0
+
+── 7. COMPARISON VS PREVIOUS CONFIG ──────────────────────────────────
+   Assumed prior acceptance rate : 5.0%
+   Current acceptance rate       : 0.00%
+   Trade frequency change        : -5.0%
+   Avg RR of accepted signals    : 0.000  (target ≥ 0.50)
+
+── 8. CALIBRATION STATUS ─────────────────────────────────────────────
+   CRITICAL — NO signals accepted yet. Bot may be over-filtered or not running long enough.
+
+── 9. VIABILITY ASSESSMENT ───────────────────────────────────────────
+   Not yet viable — zero paper trades executed. Bot needs to generate and accept signals before assessment is meaningful.
+
+======================================================================

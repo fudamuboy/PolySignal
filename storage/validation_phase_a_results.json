@@ -1,0 +1,28 @@
+{
+  "old": {
+    "win_rate": 4.545454545454546,
+    "profit_factor": 0.0989487009871845,
+    "ev_per_trade": -0.43938261162014575,
+    "realized_pnl": -9.666417455643206,
+    "avg_win": 1.061514978651772,
+    "avg_loss": -0.5108539254426179,
+    "tp_count": 1,
+    "sl_count": 21,
+    "completed_trips": 22,
+    "avg_spread": 15.99636363636364,
+    "avg_hold_time": 0.5
+  },
+  "new": {
+    "win_rate": 30.303030303030305,
+    "profit_factor": 0.2512761372049726,
+    "ev_per_trade": -0.3788774786317745,
+    "realized_pnl": -12.50295679484856,
+    "avg_win": 0.4196065923853546,
+    "avg_loss": -0.7260444660305264,
+    "tp_count": 10,
+    "sl_count": 23,
+    "completed_trips": 33,
+    "avg_spread": 19.12939393939394,
+    "avg_hold_time": 2.393939393939394
+  }
+}

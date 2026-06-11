@@ -1,0 +1,28 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Databases
+storage/database.db
+trades.db
+*.db
+
+# Logs
+storage/logs/
+*.log
+temp_log.txt
+
+# OS Files
+.DS_Store
+
+# Sensitive Credentials
+.env
+.env.production

@@ -1,0 +1,28 @@
+{
+  "before": {
+    "signals_evaluated": 950,
+    "signals_accepted": 98,
+    "acceptance_rate": 10.31578947368421,
+    "round_trips": 96,
+    "win_rate": 36.45833333333333,
+    "avg_win": 0.4412080591670877,
+    "avg_loss": -0.8231244730105918,
+    "profit_factor": 0.30755028357978675,
+    "ev_per_trade": -0.36216990398747945,
+    "realized_pnl": -34.768310782798025,
+    "max_drawdown": 267.40430000000003
+  },
+  "after": {
+    "signals_evaluated": 1385,
+    "signals_accepted": 95,
+    "acceptance_rate": 6.859205776173286,
+    "round_trips": 94,
+    "win_rate": 30.851063829787233,
+    "avg_win": 0.39815329120893905,
+    "avg_loss": -0.7703875072026669,
+    "profit_factor": 0.2305821688057944,
+    "ev_per_trade": -0.40988023960759706,
+    "realized_pnl": -38.528742523114126,
+    "max_drawdown": 290.4357
+  }
+}

@@ -1,0 +1,50 @@
+======================================================================
+  POLYMARKET BOT — CALIBRATION REPORT  (2026-05-28 21:04:05)
+  Log files: bot.log
+======================================================================
+
+── 1. TOTALS ─────────────────────────────────────────────────────────
+   Total signals generated   : 18
+   Total CALIBRATION_ACCEPTED : 1
+   Total CALIBRATION_REJECTED : 14
+   Acceptance ratio           : 5.56%
+
+── 2. PAPER TRADING ──────────────────────────────────────────────────
+   Paper trades executed      : 0
+   Paper PnL (latest snapshot): +0.0000
+
+── 3. TOP REJECTION REASONS ──────────────────────────────────────────
+   [     6] ( 42.9%)  SPREAD_TOO_WIDE
+   [     4] ( 28.6%)  LOW_LIQUIDITY
+   [     4] ( 28.6%)  RR_REJECT
+
+── 4. TOP ACCEPTED SIGNALS (by RR) ───────────────────────────────────
+   token=2930826958591704069875.. side=BUY delta=0.0900  RR=1.800  score=40.00
+
+── 5. TOP NEAR-MISS REJECTED SIGNALS (closest to passing) ────────────
+   token=37759118010832272182...   RR=0.410  reason=RR_BELOW_THRESHOLD: RR 0.410 < min 0.45
+   token=97873968929479635998...   RR=0.400  reason=RR_BELOW_THRESHOLD: RR 0.400 < min 0.45
+   token=97873968929479635998...   RR=0.400  reason=RR_BELOW_THRESHOLD: RR 0.400 < min 0.45
+
+── 6. TRADES SAVED BY CALIBRATION CHANGES ───────────────────────────
+   Noise / low-EV rejections  : 4
+   Zombie / spread rejections : 0
+   Total protected rejections : 4
+
+── 7. COMPARISON VS PREVIOUS CONFIG ──────────────────────────────────
+   Assumed prior acceptance rate : 5.0%
+   Current acceptance rate       : 5.56%
+   Trade frequency change        : +0.6%
+   Avg RR of accepted signals    : 1.800  (target ≥ 0.50)
+
+── 8. CALIBRATION STATUS ─────────────────────────────────────────────
+   TIGHT — acceptance 2-8%. Viable but lean; observe whether trades are profitable.
+
+── 9. VIABILITY ASSESSMENT ───────────────────────────────────────────
+   Not yet viable — zero paper trades executed. Bot needs to generate and accept signals before assessment is meaningful.
+
+── 10. HOURLY SNAPSHOTS ──────────────────────────────────────────────
+   [ 1] gen=   8  acc=  1  trades= 0  ratio=12.5%  rejections=[none]
+   [ 2] gen=  10  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+
+======================================================================

@@ -1,0 +1,13 @@
+{
+  "total_news_detected": 141,
+  "total_mapped_markets": 72,
+  "total_signals_generated": 51,
+  "total_executed_trades": 9,
+  "win_rate": 55.55555555555556,
+  "profit_factor": 1.0,
+  "avg_ev": 0.5600106666666665,
+  "realized_pnl": 1386.2697999999998,
+  "avg_holding_time_seconds": 27.579447507858276,
+  "max_drawdown": 0.0,
+  "elapsed_hours": 0.042001663512653775
+}

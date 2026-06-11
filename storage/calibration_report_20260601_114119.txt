@@ -1,0 +1,63 @@
+======================================================================
+  POLYMARKET BOT — CALIBRATION REPORT  (2026-06-01 11:41:19)
+  Log files: bot.log
+======================================================================
+
+── 1. TOTALS ─────────────────────────────────────────────────────────
+   Total signals generated   : 13
+   Total CALIBRATION_ACCEPTED : 619
+   Total CALIBRATION_REJECTED : 5,484
+   Acceptance ratio           : 4761.54%
+
+── 2. PAPER TRADING ──────────────────────────────────────────────────
+   Paper trades executed      : 0
+   Paper PnL (latest snapshot): +0.0000
+
+── 3. TOP REJECTION REASONS ──────────────────────────────────────────
+   [  3631] ( 66.2%)  SPREAD_TOO_WIDE
+   [  1195] ( 21.8%)  DAILY_LOSS_LIMIT
+   [   246] (  4.5%)  PRICE_EXTREME
+   [   229] (  4.2%)  ZOMBIE_PRICE_CAP
+   [    81] (  1.5%)  RR_REJECT
+   [     9] (  0.2%)  NOISE_MOVE_TOO_SMALL
+   [     5] (  0.1%)  RR_REJECT(delta 0.0198 < min 0.0200
+   [     4] (  0.1%)  EXCEEDS_AVAILABLE_CAPITAL
+   [     4] (  0.1%)  MARKET_COOLDOWN
+   [     4] (  0.1%)  RR_REJECT(delta 0.0182 < min 0.0200
+
+── 4. TOP ACCEPTED SIGNALS (by RR) ───────────────────────────────────
+   token=sim_token_2...           side=BUY delta=0.1339  RR=2.678  score=0.84
+   token=sim_token_2...           side=BUY delta=0.1339  RR=2.678  score=0.84
+   token=sim_token_2...           side=BUY delta=0.1309  RR=2.618  score=0.90
+   token=sim_token_2...           side=BUY delta=0.1309  RR=2.618  score=0.90
+   token=sim_token_1...           side=BUY delta=0.1251  RR=2.502  score=0.89
+   token=sim_token_1...           side=BUY delta=0.1251  RR=2.502  score=0.89
+   token=sim_token_1...           side=BUY delta=0.1251  RR=2.502  score=0.89
+   token=sim_token_1...           side=BUY delta=0.1251  RR=2.502  score=0.89
+   token=sim_token_2...           side=BUY delta=0.1241  RR=2.482  score=0.93
+   token=sim_token_2...           side=BUY delta=0.1241  RR=2.482  score=0.93
+
+── 5. TOP NEAR-MISS REJECTED SIGNALS (closest to passing) ────────────
+   (no near-miss data yet — near-misses only buffered at RR reject stage)
+
+── 6. TRADES SAVED BY CALIBRATION CHANGES ───────────────────────────
+   Noise / low-EV rejections  : 13
+   Zombie / spread rejections : 229
+   Total protected rejections : 242
+
+── 7. COMPARISON VS PREVIOUS CONFIG ──────────────────────────────────
+   Assumed prior acceptance rate : 5.0%
+   Current acceptance rate       : 4761.54%
+   Trade frequency change        : +4756.5%
+   Avg RR of accepted signals    : 1.209  (target ≥ 0.50)
+
+── 8. CALIBRATION STATUS ─────────────────────────────────────────────
+   AGGRESSIVE — acceptance > 35%. Risk of over-trading; verify RR remains positive.
+
+── 9. VIABILITY ASSESSMENT ───────────────────────────────────────────
+   Not yet viable — zero paper trades executed. Bot needs to generate and accept signals before assessment is meaningful.
+
+── 10. HOURLY SNAPSHOTS ──────────────────────────────────────────────
+   [ 1] gen=  13  acc=  0  trades= 0  ratio=0.0%  rejections=[none]
+
+======================================================================
