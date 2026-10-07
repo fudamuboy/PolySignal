@@ -21,6 +21,8 @@ class TwitterClient:
         # Track since_id per account to only fetch new tweets
         self.since_ids = {}
         self.is_configured = bool(self.bearer_token)
+        # Log YES/NO only — the token value is NEVER printed or exposed
+        logger.info(f"Twitter API configured: {'YES' if self.is_configured else 'NO'}")
         if not self.is_configured:
             logger.warning("TwitterClient: TWITTER_BEARER_TOKEN not set. Official Twitter v2 API features will be unavailable.")
 

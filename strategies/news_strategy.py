@@ -22,6 +22,19 @@ class NewsStrategy(BaseStrategy):
         self.injected_news = []    # Mock news injected by validation runner
         self.active = True
         
+        # Observability stats dictionary
+        self.stats = {
+            "articles_received": 0,
+            "twitter_received": 0,
+            "rss_received": 0,
+            "mock_received": 0,
+            "events_matched": 0,
+            "signals_generated": 0,
+            "signals_rejected_score": 0,
+            "twitter_available": False,
+            "rss_available": True
+        }
+        
         # Twitter/X RSS Integration via Nitter pool (Primary Alpha Engine)
         self.twitter_handles = ["DeitaOne", "Unusual_Whales", "spectatorindex", "BleacherReport"]
         self.nitter_instances = [
@@ -36,6 +49,10 @@ class NewsStrategy(BaseStrategy):
         self.twitter_polling_task = asyncio.create_task(self._poll_twitter_loop())
         logger.info("NewsStrategy initialized with RSS and real-time Twitter/X sentiment polling.")
 
+    def get_stats(self):
+        """Return a snapshot of News Engine observability metrics."""
+        return dict(self.stats)
+
     async def _poll_loop(self):
         """Asynchronously poll RSS feeds in the background."""
         headers = {
@@ -43,7 +60,7 @@ class NewsStrategy(BaseStrategy):
         }
         while self.active:
             try:
-                async with httpx.AsyncClient(timeout=8.0, headers=headers, follow_redirects=True) as client:
+                async with httpx.AsyncClient(timeout=4.0, verify=False, headers=headers, follow_redirects=True) as client:
                     for url in self.rss_urls:
                         try:
                             response = await client.get(url)
@@ -74,6 +91,8 @@ class NewsStrategy(BaseStrategy):
                                 })
                                 new_count += 1
                             if new_count > 0:
+                                self.stats["rss_received"] += new_count
+                                self.stats["articles_received"] += new_count
                                 logger.info(f"NewsStrategy: Ingested {new_count} new articles from {url}")
                         except Exception as e:
                             logger.error(f"NewsStrategy error fetching feed {url}: {e}")
@@ -86,6 +105,7 @@ class NewsStrategy(BaseStrategy):
         """Poll Twitter/X feeds using official TwitterClient with fallback to Nitter RSS mirrors."""
         from app.twitter_client import TwitterClient
         twitter_client = TwitterClient()
+        self.stats["twitter_available"] = twitter_client.is_configured
         
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -105,10 +125,12 @@ class NewsStrategy(BaseStrategy):
                         self.news_queue.append(tweet)
                     
                     if new_tweets:
+                        self.stats["twitter_received"] += len(new_tweets)
+                        self.stats["articles_received"] += len(new_tweets)
                         logger.info(f"NewsStrategy: Ingested {len(new_tweets)} tweets via official Twitter API v2.")
                 else:
                     # 2. Fallback to Nitter RSS mirror rotation
-                    async with httpx.AsyncClient(timeout=8.0, headers=headers, follow_redirects=True) as client:
+                    async with httpx.AsyncClient(timeout=4.0, verify=False, headers=headers, follow_redirects=True) as client:
                         for handle in self.twitter_handles:
                             if not self.active:
                                 break
@@ -391,8 +413,11 @@ class NewsStrategy(BaseStrategy):
                 
                 # Trade score gating (Only trade scores above 70)
                 if alpha_score < 70.0:
+                    self.stats["signals_rejected_score"] += 1
                     logger.info(f"NewsStrategy: Rejected event '{article['title']}' | Alpha Score {alpha_score:.1f} < 70")
                     continue
+
+                self.stats["events_matched"] += 1
 
                 # 2. Local Market Mapping (First check passed market_data for matches)
                 best_market = None
@@ -449,7 +474,7 @@ class NewsStrategy(BaseStrategy):
                     
                     candidate_markets = []
                     try:
-                        async with httpx.AsyncClient(timeout=8.0, headers=headers, follow_redirects=True) as client:
+                        async with httpx.AsyncClient(timeout=1.5, verify=False, headers=headers, follow_redirects=True) as client:
                             response = await client.get(url)
                             if response.status_code == 200:
                                 search_results = response.json()
@@ -598,7 +623,14 @@ class NewsStrategy(BaseStrategy):
                     mid_price = (best_bid + best_ask) / 2
                     spread = float(best_market.get("spread") or 0.02)
                     
-                # Generate signal with dynamic alpha_score
+                # Calculate expected directional price movement (delta) from alpha score, sentiment, and conviction
+                # In prediction markets, breaking news typically moves fair value by 3% to 10%
+                sentiment_mag = float(intensity) if 'intensity' in locals() else 1.0
+                base_delta = 0.03 + ((alpha_score - 70.0) / 30.0) * 0.05 + min(0.02, abs(sentiment_mag) * 0.005)
+                expected_delta = min(0.12, max(0.025, base_delta))
+                
+                self.stats["signals_generated"] += 1
+                # Generate signal with dynamic alpha_score and realistic directional delta
                 signals.append({
                     "token_id": t_id,
                     "price": best_ask if rule["side"] == "BUY" else best_bid,
@@ -606,7 +638,7 @@ class NewsStrategy(BaseStrategy):
                     "side": rule["side"],
                     "score": alpha_score,
                     "strategy": self.name,
-                    "delta": 0.50,
+                    "delta": round(expected_delta, 4),
                     "spread": spread,
                     "reason": f"News: {article['title']} (Score: {alpha_score:.1f}, Sentiment: {sentiment_direction})"
                 })

@@ -30,96 +30,126 @@ class DataFetcher:
     # ------------------------------------------------------------------
     # Market listing
     # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Market listing
+    # ------------------------------------------------------------------
     async def fetch_markets(self):
         """Fetch active markets from the full universe (Gamma API with local fallback)."""
-        import urllib.request
+        import httpx
         import json
+        import os
+        from .config import BASE_DIR
+
+        # Primary: Query Gamma API sorted by volume24hr descending
+        url = "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=100&order=volume24hr&ascending=false"
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"Scanning full Polymarket active universe via Gamma API (attempt {attempt+1}/{max_retries})...")
+                async with httpx.AsyncClient(timeout=12.0) as client:
+                    response = await client.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data and isinstance(data, list):
+                            normalized_markets = []
+                            for m in data:
+                                if not isinstance(m, dict):
+                                    continue
+                                nm = m.copy()
+
+                                # Reconstruct tokens standard format
+                                if "tokens" not in nm and "clobTokenIds" in nm:
+                                    clob_ids = nm.get("clobTokenIds") or []
+                                    if isinstance(clob_ids, str):
+                                        try:
+                                            clob_ids = json.loads(clob_ids)
+                                        except Exception:
+                                            clob_ids = []
+                                    outcomes = nm.get("outcomes") or []
+                                    if isinstance(outcomes, str):
+                                        try:
+                                            outcomes = json.loads(outcomes)
+                                        except Exception:
+                                            outcomes = []
+                                    prices = nm.get("outcomePrices") or []
+                                    if isinstance(prices, str):
+                                        try:
+                                            prices = json.loads(prices)
+                                        except Exception:
+                                            prices = []
+                                    tokens = []
+                                    for i, tid in enumerate(clob_ids):
+                                        outcome = outcomes[i] if i < len(outcomes) else ("Yes" if i == 0 else "No")
+                                        price = prices[i] if i < len(prices) else "0.5"
+                                        tokens.append({
+                                            "token_id": str(tid),
+                                            "outcome": outcome,
+                                            "price": price
+                                        })
+                                    nm["tokens"] = tokens
+
+                                # Map volume and liquidity keys
+                                nm["volume_24h"] = float(nm.get("volume24hr") or nm.get("volumeNum") or nm.get("volume_24h") or nm.get("volume") or 0)
+                                nm["liquidity"] = float(nm.get("liquidityNum") or nm.get("liquidity") or nm.get("liquidityClob") or 0)
+
+                                # Compute spread from Gamma spread or bestBid / bestAsk
+                                bid = float(nm.get("bestBid") or 0.0) if nm.get("bestBid") is not None else 0.0
+                                ask = float(nm.get("bestAsk") or 0.0) if nm.get("bestAsk") is not None else 0.0
+
+                                spread_val = nm.get("spread")
+                                if spread_val is not None:
+                                    try:
+                                        nm["spread"] = round(float(spread_val), 4)
+                                    except Exception:
+                                        nm["spread"] = 0.01
+                                elif ask > bid > 0:
+                                    nm["spread"] = round(ask - bid, 4)
+                                else:
+                                    nm["spread"] = 0.01
+
+                                if bid > 0: nm["best_bid"] = bid
+                                if ask > 0: nm["best_ask"] = ask
+
+                                # Compatibility fields
+                                nm["end_date_iso"] = nm.get("endDateIso") or nm.get("endDate")
+                                nm["active"] = nm.get("active", True)
+                                nm["closed"] = nm.get("closed", False)
+
+                                normalized_markets.append(nm)
+
+                            logger.info(f"Full-Universe Scanner: Successfully normalized {len(normalized_markets)} active markets via Gamma API.")
+                            
+                            # Update local snapshot cache with fresh high-volume markets for safe fallback
+                            try:
+                                cache_path = os.path.join(BASE_DIR, "storage", "active_markets_sampling.json")
+                                with open(cache_path, "w") as cf:
+                                    json.dump({"data": normalized_markets, "updated_at": time.time(), "source": "gamma_live"}, cf)
+                            except Exception as ce:
+                                logger.debug(f"Failed to update local snapshot cache: {ce}")
+
+                            return normalized_markets
+            except Exception as e:
+                logger.warning(f"Gamma API scan attempt {attempt+1} failed: {e}")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(1)
+
+        # Fallback to local snapshot (only if Gamma API completely failed)
         try:
-            logger.info("Scanning full Polymarket active universe via Gamma API...")
-            # Fetch top 100 active, open markets
-            url = "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=100"
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            
-            loop = asyncio.get_event_loop()
-            def _fetch():
-                with urllib.request.urlopen(req, timeout=5) as response:
-                    return json.loads(response.read().decode())
-                    
-            data = await loop.run_in_executor(None, _fetch)
-            if data:
-                # Normalize markets from Gamma format to bot standard format
-                normalized_markets = []
-                for m in data:
-                    if not isinstance(m, dict):
-                        continue
-                    nm = m.copy()
-                    
-                    # Reconstruct tokens standard format
-                    if "tokens" not in nm and "clobTokenIds" in nm:
-                        clob_ids = nm.get("clobTokenIds") or []
-                        if isinstance(clob_ids, str):
-                            try:
-                                clob_ids = json.loads(clob_ids)
-                            except Exception:
-                                clob_ids = []
-                        outcomes = nm.get("outcomes") or []
-                        if isinstance(outcomes, str):
-                            try:
-                                outcomes = json.loads(outcomes)
-                            except Exception:
-                                outcomes = []
-                        prices = nm.get("outcomePrices") or []
-                        if isinstance(prices, str):
-                            try:
-                                prices = json.loads(prices)
-                            except Exception:
-                                prices = []
-                        tokens = []
-                        for i, tid in enumerate(clob_ids):
-                            outcome = outcomes[i] if i < len(outcomes) else ("Yes" if i == 0 else "No")
-                            price = prices[i] if i < len(prices) else "0.5"
-                            tokens.append({
-                                "token_id": str(tid),
-                                "outcome": outcome,
-                                "price": price
-                            })
-                        nm["tokens"] = tokens
-                    
-                    # Map volume and liquidity keys
-                    nm["volume_24h"] = float(nm.get("volume24hr") or nm.get("volumeNum") or nm.get("volume_24h") or 0)
-                    nm["liquidity"] = float(nm.get("liquidityNum") or nm.get("liquidity") or nm.get("liquidityClob") or 0)
-                    nm["spread"] = float(nm.get("spread") or 1.0)
-                    
-                    # Compatibility fields
-                    nm["end_date_iso"] = nm.get("endDateIso") or nm.get("endDate")
-                    nm["active"] = nm.get("active", True)
-                    nm["closed"] = nm.get("closed", False)
-                    
-                    normalized_markets.append(nm)
-                
-                logger.info(f"Full-Universe Scanner: Successfully normalized {len(normalized_markets)} active markets.")
-                return normalized_markets
-        except Exception as e:
-            logger.warning(f"Gamma API scan failed: {e}. Falling back to local snapshot.")
-            
-        # Fallback to local snapshot
-        try:
-            import os
-            from .config import BASE_DIR
             local_path = os.path.join(BASE_DIR, "storage", "active_markets_sampling.json")
             if os.path.exists(local_path):
                 with open(local_path, "r") as f:
                     local_data = json.load(f)
                     markets = local_data.get("data", [])
-                    logger.info(f"Full-Universe Scanner: Loaded {len(markets)} markets from local snapshot.")
+                    logger.warning(f"Full-Universe Scanner [FALLBACK]: Loaded {len(markets)} markets from local snapshot.")
                     return markets
         except Exception as local_err:
             logger.error(f"DataFetcher: Fallback local snapshot load failed: {local_err}")
-            
+
         # Standard CLOB API get_sampling_markets fallback
         try:
             logger.info("Falling back to standard CLOB API get_sampling_markets...")
-            markets = self.client.get_sampling_markets()
+            loop = asyncio.get_event_loop()
+            markets = await loop.run_in_executor(None, self.client.get_sampling_markets)
             return markets
         except Exception as clob_err:
             logger.error(f"DataFetcher: All scanner queries failed: {clob_err}")

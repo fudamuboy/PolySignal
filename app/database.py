@@ -126,6 +126,27 @@ class Database:
             if 'slippage' not in columns:
                 logger.info("Database Migration: Adding 'slippage' column to 'trades' table")
                 cursor.execute("ALTER TABLE trades ADD COLUMN slippage REAL DEFAULT 0")
+            if 'fee_paid' not in columns:
+                logger.info("Database Migration: Adding 'fee_paid' column to 'trades' table")
+                cursor.execute("ALTER TABLE trades ADD COLUMN fee_paid REAL DEFAULT 0")
+            if 'order_id' not in columns:
+                logger.info("Database Migration: Adding 'order_id' column to 'trades' table")
+                cursor.execute("ALTER TABLE trades ADD COLUMN order_id TEXT DEFAULT NULL")
+            if 'fill_price' not in columns:
+                logger.info("Database Migration: Adding 'fill_price' column to 'trades' table")
+                cursor.execute("ALTER TABLE trades ADD COLUMN fill_price REAL DEFAULT NULL")
+            if 'is_maker' not in columns:
+                logger.info("Database Migration: Adding 'is_maker' column to 'trades' table")
+                cursor.execute("ALTER TABLE trades ADD COLUMN is_maker INTEGER DEFAULT 1")
+            if 'market_id' not in columns:
+                logger.info("Database Migration: Adding 'market_id' column to 'trades' table")
+                cursor.execute("ALTER TABLE trades ADD COLUMN market_id TEXT DEFAULT NULL")
+            if 'exit_reason' not in columns:
+                logger.info("Database Migration: Adding 'exit_reason' column to 'trades' table")
+                cursor.execute("ALTER TABLE trades ADD COLUMN exit_reason TEXT DEFAULT NULL")
+            if 'parent_trade_id' not in columns:
+                logger.info("Database Migration: Adding 'parent_trade_id' column to 'trades' table")
+                cursor.execute("ALTER TABLE trades ADD COLUMN parent_trade_id INTEGER DEFAULT NULL")
                 
             conn.commit()
 
@@ -138,13 +159,26 @@ class Database:
             '''), (total_exposure, max_position_exposure, concentration))
             conn.commit()
 
-    def save_trade(self, token_id, side, size, price, strategy='Unknown', realized_pnl=0, spread=0, slippage=0):
+    def save_trade(self, token_id, side, size, price, strategy='Unknown', realized_pnl=0, spread=0, slippage=0,
+                   fee_paid=0.0, order_id=None, fill_price=None, is_maker=1, market_id=None, exit_reason=None, parent_trade_id=None):
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(self._format_query('''
-                INSERT INTO trades (token_id, side, size, price, strategy, realized_pnl, spread, slippage)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            '''), (token_id, side, size, price, strategy, realized_pnl, spread, slippage))
+                INSERT INTO trades (
+                    token_id, side, size, price, strategy, realized_pnl, spread, slippage,
+                    fee_paid, order_id, fill_price, is_maker, market_id, exit_reason, parent_trade_id
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''), (
+                str(token_id), str(side), float(size), float(price), str(strategy),
+                float(realized_pnl), float(spread), float(slippage), float(fee_paid),
+                str(order_id) if order_id else None,
+                float(fill_price) if fill_price is not None else float(price),
+                int(is_maker),
+                str(market_id) if market_id else None,
+                str(exit_reason) if exit_reason else None,
+                int(parent_trade_id) if parent_trade_id is not None else None
+            ))
             conn.commit()
 
     def update_position(self, token_id, size, avg_price):
@@ -233,7 +267,7 @@ class Database:
             }
 
     def get_engine_performance(self):
-        """Fetch performance metrics for all strategies."""
+        """Fetch comprehensive performance metrics for all strategies including fees and attribution."""
         with self._get_connection() as conn:
             if self.is_postgresql:
                 import psycopg2.extras
@@ -242,13 +276,17 @@ class Database:
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
             
-            # Fetch all trades grouped by strategy
+            # Fetch all strategies with completed trades (realized_pnl != 0 or side == 'SELL')
             cursor.execute('''
                 SELECT 
                     strategy,
                     COUNT(*) as total_trades,
                     SUM(realized_pnl) as net_pnl,
-                    SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) as wins
+                    SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) as wins,
+                    SUM(CASE WHEN realized_pnl < 0 THEN 1 ELSE 0 END) as losses,
+                    AVG(size * price) as avg_trade_size,
+                    AVG(realized_pnl) as avg_trade_pnl,
+                    SUM(fee_paid) as total_fees
                 FROM trades
                 WHERE realized_pnl != 0
                 GROUP BY strategy
@@ -259,17 +297,20 @@ class Database:
             for row in rows:
                 strat = row['strategy']
                 total = row['total_trades']
-                net_pnl = row['net_pnl'] or 0.0
-                wins = row['wins'] or 0
+                net_pnl = float(row['net_pnl'] or 0.0)
+                wins = int(row['wins'] or 0)
+                losses = int(row['losses'] or 0)
+                avg_size = float(row['avg_trade_size'] or 0.0)
+                avg_pnl = float(row['avg_trade_pnl'] or 0.0)
+                total_fees = float(row['total_fees'] or 0.0)
                 
                 # Win rate
-                win_rate = (wins / total) if total > 0 else 0.0
+                win_rate = (wins / total * 100.0) if total > 0 else 0.0
                 
-                # EV (average realized PnL)
+                # EV (average realized PnL per trade)
                 ev = (net_pnl / total) if total > 0 else 0.0
                 
                 # Fetch detailed trades to calculate profit factor and drawdown
-                # Create a fresh cursor for the inner query
                 if self.is_postgresql:
                     import psycopg2.extras
                     inner_cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -304,11 +345,16 @@ class Database:
                         
                 performance[strat] = {
                     "total_trades": total,
-                    "realized_pnl": net_pnl,
-                    "win_rate": win_rate,
-                    "ev": ev,
-                    "profit_factor": profit_factor,
-                    "max_drawdown": max_dd
+                    "wins": wins,
+                    "losses": losses,
+                    "realized_pnl": round(net_pnl, 4),
+                    "win_rate": round(win_rate, 2),
+                    "ev": round(ev, 4),
+                    "avg_trade_size": round(avg_size, 2),
+                    "avg_trade_pnl": round(avg_pnl, 4),
+                    "total_fees": round(total_fees, 4),
+                    "profit_factor": round(profit_factor, 2),
+                    "max_drawdown": round(max_dd, 4)
                 }
                 
             return performance
