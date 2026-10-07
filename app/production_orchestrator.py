@@ -436,7 +436,9 @@ class CoordinatorProcess:
                     side=signal["side"],
                     strategy=signal.get("strategy", "Unknown"),
                     spread=live_market_data.get("spread", 0),
-                    slippage=result.get("slippage", 0)
+                    slippage=result.get("slippage", 0),
+                    is_maker=result.get("is_maker", not is_aggressive),
+                    fee=result.get("fee")
                 )
                 self.risk.update_after_trade(success=True, token_id=token_id, pnl=pnl, strategy=signal.get("strategy"))
                 logger.info(f"Coordinator: Executed order successfully. PnL: {pnl:+.4f}")
@@ -473,7 +475,9 @@ class CoordinatorProcess:
                         side=fill["side"],
                         strategy=fill.get("strategy", "PMM"),
                         spread=fill.get("spread", 0.0),
-                        slippage=fill.get("slippage", 0.0)
+                        slippage=fill.get("slippage", 0.0),
+                        is_maker=True,
+                        fee=fill.get("fee")
                     )
                     self.risk.update_after_trade(success=True, token_id=fill["token_id"], pnl=pnl, strategy=fill.get("strategy", "PMM"))
 
@@ -482,6 +486,7 @@ class CoordinatorProcess:
                 for exit_cand in exits:
                     tok_id = exit_cand["token_id"]
                     is_emergency = "SL" in exit_cand["reason"]
+                    is_aggressive_exit = is_emergency or exit_cand.get("is_maker", True) is False
                     quoted_price = exit_cand["price"]
                     
                     logger.info(f"Coordinator: Triggering exit for {tok_id[:20]}... Reason: {exit_cand['reason']}")
@@ -491,7 +496,7 @@ class CoordinatorProcess:
                         size=exit_cand["size"],
                         side="SELL",
                         market_data=market_data_map.get(tok_id),
-                        is_aggressive=True,
+                        is_aggressive=is_aggressive_exit,
                         is_emergency=is_emergency,
                         signal_delta=0,
                         signal_spread=exit_cand.get("spread", 0)
@@ -504,7 +509,10 @@ class CoordinatorProcess:
                             side="SELL",
                             strategy="EXIT_" + exit_cand["reason"].split()[0],
                             spread=exit_cand.get("spread", 0),
-                            slippage=result.get("slippage", 0)
+                            slippage=result.get("slippage", 0),
+                            is_maker=result.get("is_maker", False),
+                            fee=result.get("fee"),
+                            exit_reason=exit_cand["reason"]
                         )
                         self.risk.update_after_trade(success=True, token_id=tok_id, pnl=pnl, strategy="EXIT_" + exit_cand["reason"].split()[0])
 

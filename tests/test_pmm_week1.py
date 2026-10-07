@@ -3,12 +3,12 @@ from app.execution_engine import ExecutionEngine
 from app.position_manager import PositionManager
 
 @pytest.mark.asyncio
-async def test_pmm_resting_order_flow():
+async def test_pmm_resting_order_flow(book):
     print("Testing PMM Resting Order Flow...")
     ee = ExecutionEngine(paper_trading=True)
     
     # 1. Verify placed order returns PENDING and enters ledger
-    res = await ee.place_limit_order("token_a", 0.50, 10, "BUY")
+    res = await ee.place_limit_order("token_a", 0.50, 10, "BUY", market_data=book(0.48, 0.52))
     assert res["status"] == "PENDING"
     assert len(ee.pending_orders) == 1
     assert ee.pending_orders[0]["token_id"] == "token_a"
@@ -47,7 +47,7 @@ async def test_pmm_resting_order_flow():
     assert len(ee.pending_orders) == 0  # order is removed from ledger
 
     # 4. Check order cancellation
-    res_cancel = await ee.place_limit_order("token_b", 0.60, 5, "SELL")
+    res_cancel = await ee.place_limit_order("token_b", 0.60, 5, "SELL", market_data=book(0.58, 0.62))
     assert len(ee.pending_orders) == 1
     order_id = res_cancel["order_id"]
     

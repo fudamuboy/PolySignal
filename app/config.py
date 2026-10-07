@@ -19,7 +19,24 @@ CHAIN_ID = int(os.getenv("CHAIN_ID", 137)) # Default to Polygon Mainnet
 
 # Bot Settings
 PAPER_TRADING = os.getenv("PAPER_TRADING", "True").lower() == "true"
+LIVE_TRADING = os.getenv("LIVE_TRADING", "False").lower() == "true"
 TEST_MODE = os.getenv("TEST_MODE", "False").lower() == "true"
+REALISTIC_PAPER_MODE = PAPER_TRADING and not TEST_MODE
+
+# Fee Schedule (configurable, Polymarket standard: 20 bps = 0.20% taker, 0 bps maker)
+TAKER_FEE_BPS = int(os.getenv("TAKER_FEE_BPS", 20))    # 0.20% taker fee
+MAKER_FEE_BPS = int(os.getenv("MAKER_FEE_BPS", 0))     # 0.0% maker fee
+ESTIMATED_FEE_BPS = int(os.getenv("ESTIMATED_FEE_BPS", str(TAKER_FEE_BPS)))  # legacy: core logic now reads each market's feeSchedule
+
+# Capital & Sizing Settings (Scaled dynamically for $50, $100, $250, $500)
+REAL_CAPITAL = float(os.getenv("REAL_CAPITAL", 50.0))
+PAPER_INITIAL_CAPITAL = float(os.getenv("PAPER_INITIAL_CAPITAL", 50.0)) # Virtual/Paper trading capital
+MAX_POSITION_PCT = float(os.getenv("MAX_POSITION_PCT", 0.20))    # max 20% of capital per position
+MAX_PORTFOLIO_PCT = float(os.getenv("MAX_PORTFOLIO_PCT", 0.80))  # max 80% total portfolio exposure
+RISK_PER_TRADE_PCT = float(os.getenv("RISK_PER_TRADE_PCT", 0.05)) # risk 5% of capital per trade ($2.50 on $50)
+MIN_ORDER_VALUE_USD = float(os.getenv("MIN_ORDER_VALUE_USD", 0.50))
+MAX_ORDER_VALUE_USD = float(os.getenv("MAX_ORDER_VALUE_USD", 15.0))
+
 MIN_DEPTH_USD      = float(os.getenv("MIN_DEPTH_USD", 300.0))   # Production depth floor
 MIN_DEPTH_USD_TEST = 200.0   # Test/paper mode only — allows $200–$299 with warning log
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -27,34 +44,38 @@ POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", 10))
 
 # Filtering Settings
 MIN_LIQUIDITY = float(os.getenv("MIN_LIQUIDITY", 100))
-MAX_SPREAD = 0.20 # 20% max spread — safety filter before any BUY
+MAX_SPREAD = float(os.getenv("MAX_SPREAD", 0.01)) # 1.0% max spread — tight liquid markets for positive EV
+MAX_SPREAD_LEGACY = 0.20 # Retained for A/B comparison tests
 MIN_ENTRY_PRICE = float(os.getenv("MIN_ENTRY_PRICE", 0.20))
 MAX_ENTRY_PRICE = float(os.getenv("MAX_ENTRY_PRICE", 0.80))
 MARKET_COOLDOWN = int(os.getenv("MARKET_COOLDOWN", 600)) # 10 minutes
 
 # Global Market Quality Filters
 GLOBAL_MIN_VOLUME = 50000
-GLOBAL_MAX_SPREAD = 0.02
+GLOBAL_MAX_SPREAD = 0.01 # Tightened to 1.0% for positive EV
 GLOBAL_MIN_PRICE = 0.10
 GLOBAL_MAX_PRICE = 0.90
 GLOBAL_MIN_LIQUIDITY = 5000
 GLOBAL_MIN_SCORE = 70
 
 # Risk Settings
-MAX_CAPITAL_PER_TRADE = float(os.getenv("MAX_CAPITAL_PER_TRADE", 1.0))
+MAX_CAPITAL_PER_TRADE = float(os.getenv("MAX_CAPITAL_PER_TRADE", 2.50))
 MAX_DAILY_LOSS = float(os.getenv("MAX_DAILY_LOSS", 5.0))
 MAX_DAILY_DRAWDOWN = float(os.getenv("MAX_DAILY_DRAWDOWN", 10.0)) # Absolute amount
 MAX_STOP_LOSS_PER_TRADE = float(os.getenv("MAX_STOP_LOSS_PER_TRADE", 0.5)) # Absolute amount
 MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", 8))  # Reduced: quality over quantity
 CONSECUTIVE_LOSS_LIMIT = int(os.getenv("CONSECUTIVE_LOSS_LIMIT", 3))
 COOLDOWN_DURATION = int(os.getenv("COOLDOWN_DURATION", 3600)) # 1 hour
-BASE_ORDER_SIZE = float(os.getenv("BASE_ORDER_SIZE", 0.5))
+BASE_ORDER_SIZE = float(os.getenv("BASE_ORDER_SIZE", 2.50)) # $2.50 per position sizing on $50 capital
 AGGRESSIVE_SLIPPAGE = 0.03 # 3% slippage allowed for aggressive orders (Exits)
 MOMENTUM_THRESHOLD = 0.025 # 2.5 cent default move required
 MOMENTUM_MIN_LIQUIDITY = 500 # $500 combined depth
 DYNAMIC_SL_SPREAD_MULT = 0.8 # SL = spread * 0.8 (spread-aware but capped)
 DYNAMIC_SL_FLOOR = 0.04 # 4% minimum SL
 MAX_SL_ABSOLUTE = 0.05  # 5% hard cap — never risk more than 5% adverse move
+
+# Microstructure & Exit Engine Settings
+MAKER_TP_TIMEOUT_TICKS = int(os.getenv("MAKER_TP_TIMEOUT_TICKS", 6)) # 6 ticks waiting before fallback to bid
 
 # WebSocket stability
 WS_STALE_TIMEOUT = 30          # seconds before forcing reconnect (was 60)
@@ -67,7 +88,6 @@ MAX_SIGNAL_DELTA = 0.15        # reject signal if abs(delta) > 15% (data spike/a
 MAX_PRICE_DRIFT = 0.05         # cancel trade if REST price differs > 5% from signal price
 
 # Quality & Profitability Settings
-ESTIMATED_FEE_BPS = int(os.getenv("ESTIMATED_FEE_BPS", 20)) # 0.20%
 MIN_MOVE_THRESHOLD = 0.015 # 1.5 cent minimum price edge for V2 Profit Mode
 SOLO_MOMENTUM_MIN_SCORE = 0.75 # Minimum score for solo momentum trade
 SOLO_MOMENTUM_SIZE_MULTIPLIER = 0.5 # Buy 50% size for solo momentum
@@ -90,7 +110,7 @@ ZOMBIE_RESOLUTION_HOURS = 24  # Avoid markets resolving within 24h (if data avai
 
 
 # DB Settings
-DB_PATH = STORAGE_DIR / "database.db"
+DB_PATH = Path(os.getenv("DB_PATH", STORAGE_DIR / "database.db"))
 
 # Balanced Activity Settings
 INACTIVITY_THRESHOLD = 20    # loops before lowering confidence

@@ -2,6 +2,7 @@ import time
 import collections
 from .logger import logger
 from .database import Database
+from .paper_fill_model import get_tick_size
 
 class PositionManager:
     def __init__(self):
@@ -67,21 +68,33 @@ class PositionManager:
         )
         return metrics
 
-    def update_position(self, token_id, size, price, side, strategy='Unknown', spread=0, slippage=0):
-        """Update position and return realized PnL for this transaction."""
-        transaction_pnl = 0
+    def update_position(self, token_id, size, price, side, strategy='Unknown', spread=0, slippage=0,
+                        is_maker=True, order_id=None, exit_reason=None, parent_trade_id=None, fee=None):
+        """Update position and return realized PnL for this transaction, subtracting realistic fees.
+        fee: actual fee in USD charged by the (simulated) exchange; when omitted it is
+        estimated from MAKER_FEE_BPS / TAKER_FEE_BPS."""
+        from .config import MAKER_FEE_BPS, TAKER_FEE_BPS
+        transaction_pnl = 0.0
+        fee_paid = 0.0
+        
+        fee_rate = (MAKER_FEE_BPS if is_maker else TAKER_FEE_BPS) / 10000.0
+        trade_value = size * price
+        current_fee = trade_value * fee_rate if fee is None else float(fee)
         
         if side == 'BUY':
+            fee_paid = current_fee
             if token_id not in self.positions:
                 self.positions[token_id] = {
                     'size': size, 
                     'avg_price': price, 
                     'strategy': strategy,
-                    'entry_time': time.time()
+                    'entry_time': time.time(),
+                    'entry_fee': current_fee
                 }
             else:
                 old_size = self.positions[token_id]['size']
                 old_price = self.positions[token_id]['avg_price']
+                old_fee = self.positions[token_id].get('entry_fee', 0.0)
                 old_time = self.positions[token_id].get('entry_time', time.time())
                 new_size = old_size + size
                 new_price = ((old_price * old_size) + (price * size)) / new_size
@@ -89,23 +102,34 @@ class PositionManager:
                     'size': new_size, 
                     'avg_price': new_price, 
                     'strategy': strategy,
-                    'entry_time': old_time
+                    'entry_time': old_time,
+                    'entry_fee': old_fee + current_fee
                 }
         elif side == 'SELL':
             if token_id in self.positions:
                 old_size = self.positions[token_id]['size']
                 old_price = self.positions[token_id]['avg_price']
+                old_fee_total = self.positions[token_id].get('entry_fee', 0.0)
                 opening_strategy = self.positions[token_id].get('strategy', 'Unknown')
                 
-                # Realized PnL = (Sell Price - Buy Price) * Sold Size
-                transaction_pnl = (price - old_price) * size
+                # Pro-rata entry fee for the size being sold
+                portion_sold = min(1.0, size / old_size) if old_size > 0 else 1.0
+                entry_fee_portion = old_fee_total * portion_sold
+                exit_fee = current_fee
+                fee_paid = entry_fee_portion + exit_fee
+                
+                # Gross PnL = (Sell Price - Buy Price) * Sold Size
+                gross_pnl = (price - old_price) * size
+                # Net PnL = Gross PnL - Round-trip fees
+                transaction_pnl = gross_pnl - fee_paid
                 self.realized_pnl += transaction_pnl
                 
-                new_size = old_size - size
+                new_size = max(0.0, old_size - size)
                 if new_size <= 1e-8: # floating point epsilon
                     del self.positions[token_id]
                 else:
                     self.positions[token_id]['size'] = new_size
+                    self.positions[token_id]['entry_fee'] = max(0.0, old_fee_total - entry_fee_portion)
                 
                 # Override the strategy name with the opening strategy for correct database tracking
                 strategy = opening_strategy
@@ -118,17 +142,36 @@ class PositionManager:
             'strategy': strategy,
             'price': price,
             'spread': spread,
-            'slippage': slippage
+            'slippage': slippage,
+            'fee_paid': fee_paid,
+            'is_maker': is_maker
         }
         self.trade_history.append(trade_record)
         if len(self.trade_history) > 20:
             self.trade_history.pop(0)
 
         # Persist trade and updated position
-        self.db.save_trade(token_id, side, size, price, strategy, transaction_pnl, spread, slippage)
-        self.db.update_position(token_id, 
-                               self.positions[token_id]['size'] if token_id in self.positions else 0,
-                               self.positions[token_id]['avg_price'] if token_id in self.positions else 0)
+        self.db.save_trade(
+            token_id=token_id,
+            side=side,
+            size=size,
+            price=price,
+            strategy=strategy,
+            realized_pnl=transaction_pnl,
+            spread=spread,
+            slippage=slippage,
+            fee_paid=fee_paid,
+            order_id=order_id,
+            fill_price=price,
+            is_maker=1 if is_maker else 0,
+            exit_reason=exit_reason,
+            parent_trade_id=parent_trade_id
+        )
+        self.db.update_position(
+            token_id, 
+            self.positions[token_id]['size'] if token_id in self.positions else 0,
+            self.positions[token_id]['avg_price'] if token_id in self.positions else 0
+        )
         
         # Update categorized stats
         if side == 'SELL' or transaction_pnl != 0:
@@ -139,7 +182,16 @@ class PositionManager:
             self.market_stats[token_id]['pnl'] += transaction_pnl
             self.market_stats[token_id]['count'] += 1
 
-        logger.info(f"Updated position for {token_id} | Side: {side} | PnL: {transaction_pnl:+.4f} | Total Realized: {self.realized_pnl:+.4f}")
+            if is_maker and (exit_reason and "MAKER_TP" in exit_reason or "TP" in str(exit_reason)):
+                logger.info(
+                    f"MAKER_TP_FILL: {token_id[:20]} | Exit Price: {price:.4f} | "
+                    f"PnL (net fee $0 exit): {transaction_pnl:+.4f} | Reason: {exit_reason}"
+                )
+
+        logger.info(
+            f"Updated position for {token_id} | Side: {side} | PnL (net fee): {transaction_pnl:+.4f} | "
+            f"Fee: ${fee_paid:.4f} | Total Realized: {self.realized_pnl:+.4f}"
+        )
         return transaction_pnl
 
     def get_live_performance(self):
@@ -163,7 +215,7 @@ class PositionManager:
         report = []
         
         # Create map of current prices
-        current_prices = {m.get("condition_id"): float(m.get("last_price", 0)) for m in enriched_markets if m.get("last_price")}
+        current_prices = {m.get("token_id"): float(m.get("last_price", 0)) for m in enriched_markets if m.get("last_price")}
 
         for token_id, pos in self.positions.items():
             current_price = current_prices.get(token_id, pos['avg_price'])
@@ -241,13 +293,9 @@ class PositionManager:
                 best_bid = market_info.get("best_bid") or market_info.get("last_price") or entry_price
                 best_ask = market_info.get("best_ask") or market_info.get("last_price") or entry_price
                 
-                # Quoting inside the spread: under-cut the best ask slightly
-                # Decrement by 0.0005 (or 0.0001 if spread is tight)
-                epsilon = 0.0005
-                if best_ask - best_bid <= 0.0010:
-                    epsilon = 0.0001
-                
-                exit_price = max(best_bid, best_ask - epsilon)
+                # Quote inside the spread: one tick under the best ask (join the ask if the spread is one tick)
+                tick = get_tick_size(market_info)
+                exit_price = best_ask - tick if best_ask - best_bid > tick + 1e-9 else best_ask
                 exits.append({
                     'token_id': token_id,
                     'reason': 'TWO_SIDED_MM_EXIT',
@@ -308,7 +356,7 @@ class PositionManager:
 
             change = (curr_mid_price - entry_price) / entry_price
 
-            # 1. Dynamic Stop Loss — hard-capped at MAX_SL_ABSOLUTE (5%)
+            # 1. Dynamic Stop Loss — Emergency exit at Bid (hard-capped at MAX_SL_ABSOLUTE 5%)
             current_spread = market_info.get("spread", MAX_SPREAD)
             dynamic_sl = min(
                 MAX_SL_ABSOLUTE,
@@ -316,39 +364,87 @@ class PositionManager:
             )
 
             if change <= -dynamic_sl:
+                # Reset any pending maker TP state
+                pos['maker_tp_ticks'] = 0
+                pos['is_maker_tp_pending'] = False
+                logger.warning(
+                    f"SL_EMERGENCY_BID: {token_id[:20]} | Exit at Bid {curr_exit_price:.4f} | "
+                    f"Move: {change*100:.1f}% vs SL {dynamic_sl*100:.1f}% | Spread: {current_spread*100:.2f}%"
+                )
                 exits.append({
                     'token_id': token_id,
-                    'reason': f"SL_DYNAMIC ({change*100:.1f}% vs SL {dynamic_sl*100:.1f}%)",
+                    'reason': f"SL_EMERGENCY_BID ({change*100:.1f}% vs SL {dynamic_sl*100:.1f}%)",
                     'side': 'SELL',
                     'size': size,
-                    # We still exit at the BID price when selling (retaining transaction cost realism)
                     'price': curr_exit_price,
+                    'is_maker': False,
                     'spread': current_spread
                 })
                 continue
 
-            # 2. Dynamic Take Profit — ALL momentum trades use TP_HIGH_CONFIDENCE (7%) floor
-            tp_target = TP_HIGH_CONFIDENCE  # 7% default (raised from 3%)
+            # 2. Dynamic Take Profit — Maker Limit Exit with 6-tick Timeout & Fallback
+            tp_target = TP_HIGH_CONFIDENCE  # 7% default floor
             strategy = pos.get('strategy', 'Unknown')
             if 'Trend' in strategy:
                 tp_target = TP_STRONG_TREND  # 10% for strong trend trades
             
-            if change >= tp_target:
-                exits.append({
-                    'token_id': token_id, 
-                    'reason': f"TP_DYNAMIC ({change*100:.1f}% vs TP {tp_target*100:.1f}%)",
-                    'side': 'SELL',
-                    'size': size,
-                    # We still exit at the BID price when selling
-                    'price': curr_exit_price,
-                    'spread': current_spread
-                })
-                continue
+            from .config import MAKER_TP_TIMEOUT_TICKS
 
-            # NOTE: Time-stop removed intentionally.
-            # Rationale: Time-stop exits were producing uncontrolled losses.
-            # Positions now exit via TP or SL only.
-            # A separate emergency close (close_all.py) exists for manual intervention.
+            if change >= tp_target:
+                curr_ask = market_info.get("best_ask") or (curr_mid_price + (curr_mid_price * current_spread / 2.0))
+                curr_bid = market_info.get("best_bid") or (curr_mid_price - (curr_mid_price * current_spread / 2.0))
+                
+                # Undercut the best ask by one market tick to gain priority as maker
+                # (join the ask when the spread is already a single tick)
+                tick = get_tick_size(market_info)
+                maker_quote_price = round(curr_ask - tick if curr_ask - curr_bid > tick + 1e-9 else curr_ask, 6)
+                
+                # Check timeout state
+                maker_ticks = pos.get('maker_tp_ticks', 0) + 1
+                pos['maker_tp_ticks'] = maker_ticks
+                
+                if maker_ticks > MAKER_TP_TIMEOUT_TICKS:
+                    # Timeout reached: Fallback to market exit at Bid
+                    logger.warning(
+                        f"MAKER_TP_TIMEOUT: {token_id[:20]} | {maker_ticks-1} ticks elapsed without fill | "
+                        f"Triggering MAKER_TP_FALLBACK to Bid at {curr_exit_price:.4f}"
+                    )
+                    pos['maker_tp_ticks'] = 0
+                    pos['is_maker_tp_pending'] = False
+                    exits.append({
+                        'token_id': token_id, 
+                        'reason': f"MAKER_TP_FALLBACK (timeout after {MAKER_TP_TIMEOUT_TICKS} ticks)",
+                        'side': 'SELL',
+                        'size': size,
+                        'price': curr_exit_price,
+                        'is_maker': False,
+                        'spread': current_spread
+                    })
+                else:
+                    # Quote as Maker Limit order inside spread
+                    pos['is_maker_tp_pending'] = True
+                    logger.info(
+                        f"MAKER_TP_ATTEMPT: {token_id[:20]} | Move: +{change*100:.1f}% >= TP {tp_target*100:.1f}% | "
+                        f"Quoting Maker Ask at {maker_quote_price:.4f} (Ask={curr_ask:.4f}, Bid={curr_bid:.4f}) | "
+                        f"Tick {maker_ticks}/{MAKER_TP_TIMEOUT_TICKS}"
+                    )
+                    exits.append({
+                        'token_id': token_id, 
+                        'reason': f"MAKER_TP_ATTEMPT ({change*100:.1f}% vs TP {tp_target*100:.1f}% | tick {maker_ticks}/{MAKER_TP_TIMEOUT_TICKS})",
+                        'side': 'SELL',
+                        'size': size,
+                        'price': maker_quote_price,
+                        'is_maker': True,
+                        'spread': current_spread
+                    })
+                continue
+            else:
+                # If price retreated below TP threshold, reset maker ticks counter
+                if pos.get('is_maker_tp_pending'):
+                    pos['is_maker_tp_pending'] = False
+                    pos['maker_tp_ticks'] = 0
+
+            # NOTE: Positions exit via MAKER TP (with fallback) or SL_EMERGENCY only.
                 
         return exits
 
