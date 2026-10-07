@@ -4,7 +4,10 @@ from .config import (
     MAX_CAPITAL_PER_TRADE, MAX_DAILY_LOSS, MAX_OPEN_POSITIONS,
     MAX_DAILY_DRAWDOWN, MAX_STOP_LOSS_PER_TRADE,
     CONSECUTIVE_LOSS_LIMIT, COOLDOWN_DURATION, BASE_ORDER_SIZE,
-    ESTIMATED_FEE_BPS, MIN_MOVE_THRESHOLD, TEST_MODE,
+    TAKER_FEE_BPS, MAKER_FEE_BPS,
+    REAL_CAPITAL, MAX_POSITION_PCT, MAX_PORTFOLIO_PCT, RISK_PER_TRADE_PCT,
+    MIN_ORDER_VALUE_USD, MAX_ORDER_VALUE_USD,
+    MIN_MOVE_THRESHOLD, TEST_MODE,
     MIN_ENTRY_PRICE, MAX_ENTRY_PRICE, MARKET_COOLDOWN,
     SOLO_MOMENTUM_SIZE_MULTIPLIER, EV_SAFETY_MARGIN,
     MIN_RR_RATIO, MAX_SL_ABSOLUTE, DYNAMIC_SL_FLOOR, MIN_DEPTH_USD,
@@ -14,6 +17,22 @@ from .config import (
     ZOMBIE_PRICE_CAP, ZOMBIE_BID_FLOOR, ZOMBIE_MAX_SPREAD
 )
 from .logger import logger
+from .paper_fill_model import taker_fee_rate, maker_fee_rate
+
+def is_aggressive_signal(signal):
+    """
+    Single source of truth for whether a signal is executed as a taker.
+    Used by both the EV check and the main loop so fees are estimated for the
+    order type that is actually sent. Market making always quotes passively.
+    """
+    if signal.get("strategy") == "TwoSidedMMStrategy":
+        return False
+    score = signal.get("score", 50.0)
+    scale = 1.0 if score > 1.0 else 0.01  # scores come as 0-100 or 0-1
+    if score >= 85 * scale:
+        return True
+    return signal.get("strategy") == "NewsStrategy" and score >= 80 * scale
+
 
 class RiskManager:
     def __init__(self, position_manager=None):
@@ -373,7 +392,7 @@ class RiskManager:
                     score = signal.get('score', 50.0)
                     
                     delta_pct = delta / price if price > 0 else 0
-                    fee_pct = ESTIMATED_FEE_BPS / 10000
+                    fee_pct = taker_fee_rate(price, market_data)
                     margin = EV_SAFETY_MARGIN
                     
                     required_edge = spread + (fee_pct * 2) + margin
@@ -402,7 +421,7 @@ class RiskManager:
                     score = signal.get('score', 50.0)
                     
                     delta_pct = delta / price if price > 0 else 0
-                    fee_pct = ESTIMATED_FEE_BPS / 10000
+                    fee_pct = taker_fee_rate(price, market_data)
                     margin = EV_SAFETY_MARGIN
                     
                     required_edge = spread + (fee_pct * 2) + margin
@@ -521,13 +540,12 @@ class RiskManager:
             )
 
     def evaluate_ev(self, signal, market_data, is_fallback=False):
-
         """
-        Calculate Expected Value (EV) considering spread and fees.
+        Calculate Expected Value (EV) considering spread and maker/taker fees.
         Units: All converted to percentage of mid-price.
         """
         token_id = signal.get('token_id')
-        spread = market_data.get('spread', 1.0)
+        spread = market_data.get('spread', 1.0) if market_data else 1.0
         delta = abs(signal.get('delta', 0))
         price = float(signal.get('price', 1.0))
         score = signal.get('score', 50.0)
@@ -535,24 +553,24 @@ class RiskManager:
         # 1. Delta Percentage (Price edge / Current price)
         delta_pct = delta / price if price > 0 else 0
         
-        # 2. Estimated Fees (BPS to Decimal)
-        fee_pct = ESTIMATED_FEE_BPS / 10000
-        
-        # 3. Required Edge (Spread cost + Fee cost + Safety Margin)
-        # Margin is smaller in fallback mode
+        # Must match the execution decision made in main.py (see is_aggressive_signal)
+        is_passive = not is_aggressive_signal(signal)
+
+        # 2. Real round-trip fees from the market's feeSchedule (fraction of notional).
+        # Passive entries assume a passive exit; taker entries assume a taker exit (conservative).
+        leg_fee = maker_fee_rate(price, market_data) if is_passive else taker_fee_rate(price, market_data)
+        fee_pct = leg_fee * 2
+
+        # 3. Required Edge (Spread cost + Fee cost for round-trip + Safety Margin)
         margin = EV_SAFETY_MARGIN if not is_fallback else 0.0002
-        
-        # Determine if the signal will be executed as a passive maker order
-        # (Passive limit orders are those with score < 85, or from TwoSidedMMStrategy)
-        is_passive = ((score < 85) if score > 1.0 else (score < 0.85)) or signal.get("strategy") == "TwoSidedMMStrategy"
-        
-        # For passive maker orders, we do not pay the spread cost on entry (it is captured / zero spread cost)
+
+        # For passive maker orders: no entry spread cost (maker captures/crosses inside)
         if is_passive:
-            required_edge = (fee_pct * 2) + margin
-            logger.info(f"EV_CALC: Treating order for {token_id} as PASSIVE maker. Removing spread penalty ({spread*100:.3f}%).")
+            required_edge = fee_pct + margin
+            logger.info(f"EV_CALC: Treating order for {token_id} as PASSIVE maker. Round-trip fee={fee_pct*100:.2f}%. Removing spread penalty ({spread*100:.3f}%).")
         else:
-            required_edge = spread + (fee_pct * 2) + margin
-            logger.info(f"EV_CALC: Treating order for {token_id} as AGGRESSIVE taker. Retaining spread penalty ({spread*100:.3f}%).")
+            required_edge = spread + fee_pct + margin
+            logger.info(f"EV_CALC: Treating order for {token_id} as AGGRESSIVE taker. Round-trip fee={fee_pct*100:.2f}%. Retaining spread penalty ({spread*100:.3f}%).")
         
         expected_profit = delta_pct - required_edge
         
@@ -560,60 +578,115 @@ class RiskManager:
             logger.warning(f"EV REJECT: {token_id} | Move: {delta_pct*100:.2f}% | Req: {required_edge*100:.2f}% | Profit: {expected_profit*100:.2f}% | Score: {score:.2f}")
             return False
         
-        logger.info(f"EV APPROVED: {token_id} | Signal Edge: {expected_profit*100:+.2f}% (Spread: {spread*100:.2f}%)")
+        logger.info(f"EV APPROVED: {token_id} | Signal Edge: {expected_profit*100:+.2f}% (Spread: {spread*100:.2f}%, Fees: {fee_pct*100:.2f}%)")
         return True
 
     def calculate_position_size(self, signal, market_data):
         """
-        Dynamically scale position size based on signal score and liquidity.
+        Dynamically scale position size based on actual available capital, risk budget,
+        stop-loss distance, signal conviction, depth/liquidity, and fee-adjusted EV.
+        Supports capital tiers ($50, $100, $250, $500) seamlessly without hardcoding.
         """
-        score = signal.get('score', 0.5)
+        score = signal.get('score', 50.0)
         price = float(signal.get('price', 0.5))
+        if price <= 0:
+            price = 0.5
         token_id = signal.get('token_id')
+        strategy_name = signal.get('strategy', 'Unknown')
         
-        # Quadratic scaling: score squared
-        # Score 0.8 is the baseline (scale_factor = 1.0)
-        scale_factor = (score / 0.8) ** 2
+        # Normalize score to 0..100 scale
+        score_100 = score if score > 1.0 else (score * 100.0)
         
-        # Scale DOWN for lower confidence trades
-        if score < 0.45:
-            scale_factor *= 0.5
-            logger.info(f"SIZE SCALING: Low confidence ({score:.2f}) -> applying 0.5x reduction")
+        # 1. Risk-first sizing: Risk budget per trade in dollars
+        risk_budget_dollars = REAL_CAPITAL * RISK_PER_TRADE_PCT  # e.g., $50 * 2% = $1.00
+        
+        # 2. Stop-loss distance estimate
+        spread = market_data.get('spread', 0.02) if market_data else 0.02
+        dynamic_sl = min(MAX_SL_ABSOLUTE, max(DYNAMIC_SL_FLOOR, spread * 0.8))
+        if dynamic_sl <= 0:
+            dynamic_sl = 0.05
             
-        # --- Solo Momentum Sizing ---
-        if signal.get('strategy') == "SOLO_MOMENTUM":
-            scale_factor *= SOLO_MOMENTUM_SIZE_MULTIPLIER
-            logger.info(f"SIZE SCALING: Solo Momentum detected -> applying {SOLO_MOMENTUM_SIZE_MULTIPLIER}x reduction")
-
-        size = self.base_order_size * scale_factor
+        # Target position value (dollars) based on risk budget / SL
+        target_dollars_by_risk = risk_budget_dollars / dynamic_sl
         
-        orderbook = market_data.get('orderbook')
-        if orderbook:
-            side = signal.get('side', 'BUY')
-            if side == 'BUY':
-                asks = getattr(orderbook, 'asks', []) if not isinstance(orderbook, dict) else orderbook.get('asks', [])
-                depth = sum(float(a.size if hasattr(a, 'size') else a.get('size', 0)) for a in asks[:5])
+        # 3. Maximum single position exposure cap (e.g., 20% of REAL_CAPITAL = $10 on $50, $20 on $100)
+        max_pos_dollars = REAL_CAPITAL * MAX_POSITION_PCT
+        # Baseline target at normal conviction (~80 score) is 60% of max position cap
+        base_target_dollars = min(target_dollars_by_risk, max_pos_dollars * 0.60)
+        
+        # 4. Conviction / Strategy Multiplier
+        if strategy_name == "NewsStrategy":
+            # News Sizing: Scaled by measured alpha conviction, but bounded by risk
+            if score_100 >= 70.0:
+                conviction_mult = 1.0 + 0.6 * ((score_100 - 70.0) / 30.0)
+                delta = abs(signal.get('delta', 0.0))
+                if delta >= 0.05:
+                    conviction_mult += 0.2
+                if spread > 0.03:
+                    conviction_mult *= 0.7
             else:
-                bids = getattr(orderbook, 'bids', []) if not isinstance(orderbook, dict) else orderbook.get('bids', [])
-                depth = sum(float(b.size if hasattr(b, 'size') else b.get('size', 0)) for b in bids[:5])
+                conviction_mult = 0.8
+        elif strategy_name == "SOLO_MOMENTUM":
+            conviction_mult = SOLO_MOMENTUM_SIZE_MULTIPLIER
+        elif strategy_name == "TwoSidedMMStrategy":
+            conviction_mult = 0.9  # balanced maker sizing
+        else:
+            # Power curve scaling with score (e.g., score 80 -> 1.0x, score 95 -> 1.36x)
+            conviction_mult = max(0.5, (score_100 / 80.0) ** 1.8)
             
-            if depth > 0:
-                # Allow taking up to 15% of top-5 depth for higher conviction
-                size = min(size, depth * 0.15)
-
-        # Cap size to not exceed maximum allowed capital taking into account existing open position
-        current_exposure = 0
-        if self.pm and token_id:
-            open_pos = self.pm.positions.get(token_id, {})
-            current_exposure = open_pos.get('size', 0) * open_pos.get('avg_price', price)
-            
-        remaining_capital = max(0, self.max_capital_per_trade - current_exposure)
-        trade_value = size * price
+        target_dollars = min(max_pos_dollars, base_target_dollars * conviction_mult)
         
-        if trade_value > remaining_capital:
-            size = remaining_capital / price
+        # 5. Order Book Depth Constraint (take at most 12% of top-5 depth in USD)
+        if market_data:
+            orderbook = market_data.get('orderbook')
+            if orderbook:
+                side = signal.get('side', 'BUY')
+                if side == 'BUY':
+                    asks = getattr(orderbook, 'asks', []) if not isinstance(orderbook, dict) else orderbook.get('asks', [])
+                    def get_lvl_sz(x):
+                        return float(getattr(x, 'size', None) or (x.get('size') if isinstance(x, dict) else 0) or 0)
+                    depth_shares = sum(get_lvl_sz(a) for a in asks[:5])
+                else:
+                    bids = getattr(orderbook, 'bids', []) if not isinstance(orderbook, dict) else orderbook.get('bids', [])
+                    def get_lvl_sz(x):
+                        return float(getattr(x, 'size', None) or (x.get('size') if isinstance(x, dict) else 0) or 0)
+                    depth_shares = sum(get_lvl_sz(b) for b in bids[:5])
+                
+                depth_usd = depth_shares * price
+                if depth_usd > 0:
+                    target_dollars = min(target_dollars, depth_usd * 0.12)
+        
+        # 6. Portfolio Exposure and Available Capital Limits
+        current_total_exposure = 0.0
+        current_token_exposure = 0.0
+        if self.pm:
+            for tid, pos in self.pm.positions.items():
+                pos_val = pos.get('size', 0.0) * pos.get('avg_price', price)
+                current_total_exposure += pos_val
+                if tid == token_id:
+                    current_token_exposure += pos_val
+                    
+        max_portfolio_dollars = REAL_CAPITAL * MAX_PORTFOLIO_PCT
+        available_portfolio_capacity = max(0.0, max_portfolio_dollars - current_total_exposure)
+        available_token_capacity = max(0.0, max_pos_dollars - current_token_exposure)
+        
+        allowed_dollars = min(target_dollars, available_portfolio_capacity, available_token_capacity)
+        
+        # 7. Apply absolute order value bounds
+        if allowed_dollars < MIN_ORDER_VALUE_USD:
+            # If remaining capacity or target is below minimum order value, don't place dust
+            logger.info(f"SIZE SCALING | Sized below minimum order value (${allowed_dollars:.2f} < ${MIN_ORDER_VALUE_USD:.2f})")
+            return 0.0
             
-        return round(size, 2)
+        allowed_dollars = min(allowed_dollars, MAX_ORDER_VALUE_USD)
+        shares = allowed_dollars / price
+        
+        logger.info(
+            f"SIZE SCALING | Strategy: {strategy_name} | Score: {score_100:.1f} | "
+            f"Target: ${allowed_dollars:.2f} | Shares: {shares:.2f} @ {price:.4f} | "
+            f"PortExposure: ${current_total_exposure:.2f}/${max_portfolio_dollars:.2f}"
+        )
+        return round(shares, 2)
 
     def update_after_trade(self, success, token_id=None, pnl=0, strategy=None):
         if token_id:
@@ -669,7 +742,7 @@ class RiskManager:
                     score = signal.get('score', 50.0)
                     
                     delta_pct = delta / price if price > 0 else 0
-                    fee_pct = ESTIMATED_FEE_BPS / 10000
+                    fee_pct = taker_fee_rate(price, market_data)
                     margin = EV_SAFETY_MARGIN
                     
                     required_edge = spread + (fee_pct * 2) + margin
@@ -691,7 +764,7 @@ class RiskManager:
                     score = signal.get('score', 50.0)
                     
                     delta_pct = delta / price if price > 0 else 0
-                    fee_pct = ESTIMATED_FEE_BPS / 10000
+                    fee_pct = taker_fee_rate(price, market_data)
                     margin = EV_SAFETY_MARGIN
                     
                     required_edge = spread + (fee_pct * 2) + margin

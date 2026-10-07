@@ -2,97 +2,38 @@ import pytest
 import time
 from app.paper_validation_tracker import PaperValidationTracker
 
-def test_paper_tracker_order_queue_depletion():
-    print("Testing paper tracker order queue depletion...")
+def test_paper_tracker_touch_does_not_fill():
     tracker = PaperValidationTracker(total_capital=100.0)
-    
-    # Setup mock order placement
-    order_id = "paper_token_a_BUY_123"
-    token_id = "token_a"
-    price = 0.50
-    size = 10.0
-    side = "BUY"
-    
-    market_data = {
-        "best_bid": 0.49,
-        "best_ask": 0.51,
-        "bid_depth": 500.0  # initial depth in USD -> 500 / 0.50 = 1000 shares
-    }
-    
-    tracker.record_order_placement(order_id, token_id, price, size, side, market_data)
-    
-    # Verify recorded initial depth
-    assert order_id in tracker.order_queue_depths
-    assert tracker.order_queue_depths[order_id]["initial"] == 1000.0
-    assert tracker.order_queue_depths[order_id]["remaining"] == 1000.0
-    
-    # Simulating tick: market touches price level -> queue depletes
-    pending_orders = [{"order_id": order_id, "token_id": token_id, "price": price, "size": size, "side": side}]
-    
-    # Mock tick where last_price = price (touches)
-    market_data_touch = {
-        "token_a": {
-            "token_id": "token_a",
-            "best_bid": 0.49,
-            "best_ask": 0.51,
-            "last_price": 0.50, # touches limit
-            "spread": 0.04
-        }
-    }
-    
-    # Run a resting tick to trigger depletion
-    # We monkeypatch random to return a fixed depletion of 100.0
-    import random
-    original_uniform = random.uniform
-    random.uniform = lambda a, b: 100.0
-    
-    fills_1 = tracker.process_resting_tick(pending_orders, market_data_touch)
-    assert len(fills_1) == 0  # Not filled yet, queue only depleted
-    assert tracker.order_queue_depths[order_id]["remaining"] == 900.0
-    
-    # Deplete rest of queue to 0
-    tracker.order_queue_depths[order_id]["remaining"] = 10.0
-    fills_2 = tracker.process_resting_tick(pending_orders, market_data_touch)
-    assert len(fills_2) == 1
-    assert fills_2[0]["order_id"] == order_id
-    assert fills_2[0]["fill_price"] == price
-    
-    # Restore original random
-    random.uniform = original_uniform
-    print("✅ Queue depletion fill verified!")
 
-def test_paper_tracker_crossover_instant_fill():
-    print("Testing paper tracker crossover instant fill...")
-    tracker = PaperValidationTracker(total_capital=100.0)
-    
-    order_id = "paper_token_b_BUY_456"
-    token_id = "token_b"
-    price = 0.50
-    size = 10.0
-    side = "BUY"
-    
-    tracker.record_order_placement(order_id, token_id, price, size, side)
-    
-    pending_orders = [{"order_id": order_id, "token_id": token_id, "price": price, "size": size, "side": side}]
-    
-    # Mock tick where price crosses past limit (best_ask drops below P_limit)
-    market_data_cross = {
-        "token_b": {
-            "token_id": "token_b",
-            "best_bid": 0.47,
-            "best_ask": 0.48,  # best ask drops strictly below our buy limit of 0.50
-            "last_price": 0.48,
-            "spread": 0.04
-        }
+    order_id = "paper_token_a_BUY_123"
+    tracker.record_order_placement(order_id, "token_a", 0.50, 10.0, "BUY",
+                                   {"best_bid": 0.49, "best_ask": 0.51, "bid_depth": 500.0})
+    pending_orders = [{"order_id": order_id, "token_id": "token_a", "price": 0.50, "size": 10.0, "side": "BUY"}]
+
+    # Mid / last price sitting on our limit is not evidence that we were filled
+    market_data_touch = {
+        "token_a": {"token_id": "token_a", "best_bid": 0.49, "best_ask": 0.51, "last_price": 0.50, "spread": 0.04}
     }
-    
+    for _ in range(20):
+        assert tracker.process_resting_tick(pending_orders, market_data_touch) == []
+    assert order_id in tracker.order_queue_depths
+
+def test_paper_tracker_crossover_fills_at_limit():
+    tracker = PaperValidationTracker(total_capital=100.0)
+
+    order_id = "paper_token_b_BUY_456"
+    tracker.record_order_placement(order_id, "token_b", 0.50, 10.0, "BUY")
+    pending_orders = [{"order_id": order_id, "token_id": "token_b", "price": 0.50, "size": 10.0, "side": "BUY"}]
+
+    # Ask trades through our bid: a maker is filled at its own limit, not at the new ask
+    market_data_cross = {
+        "token_b": {"token_id": "token_b", "best_bid": 0.47, "best_ask": 0.48, "last_price": 0.48, "spread": 0.04}
+    }
     fills = tracker.process_resting_tick(pending_orders, market_data_cross)
     assert len(fills) == 1
-    assert fills[0]["order_id"] == order_id
-    assert fills[0]["fill_price"] == 0.48  # Instant fill gets executed at best ask price
+    assert fills[0]["fill_price"] == 0.50
+    assert fills[0]["fee"] == 0.0
     assert order_id not in tracker.order_queue_depths
-    
-    print("✅ Strict crossover instant fill verified!")
 
 def test_paper_tracker_missed_opportunities():
     print("Testing paper tracker missed opportunities rate...")

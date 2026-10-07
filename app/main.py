@@ -13,9 +13,10 @@ from .logger import logger
 from .data_fetcher import DataFetcher
 from .market_filter import MarketFilter
 from .signal_engine import SignalEngine
-from .risk_manager import RiskManager
+from .risk_manager import RiskManager, is_aggressive_signal
 from .execution_engine import ExecutionEngine
 from .position_manager import PositionManager
+from .safety_layer import SafetyLayer
 from strategies.spread_strategy import SpreadStrategy
 from strategies.consistency_strategy import ConsistencyStrategy
 from strategies.arbitrage_strategy import ArbitrageStrategy
@@ -27,6 +28,7 @@ from strategies.volume_spike_strategy import VolumeSpikeStrategy
 from strategies.order_book_imbalance_strategy import OrderBookImbalanceStrategy
 from .websocket_client import WebsocketClient
 from .token_blacklist import TokenBlacklist
+from .paper_fill_model import get_tick_size, round_to_tick
 
 
 class HourlyCalibrationTracker:
@@ -104,13 +106,15 @@ async def main():
     position_manager = PositionManager()
     risk_manager = RiskManager(position_manager=position_manager)
     execution_engine = ExecutionEngine(paper_trading=PAPER_TRADING)
+    safety_layer = SafetyLayer(position_manager=position_manager, execution_engine=execution_engine)
     token_blacklist = TokenBlacklist()  # drift-based token suppression
     
     # Initialize Live Paper Trading Validation Mode (Week 2B)
     paper_tracker = None
     if PAPER_TRADING:
         from .paper_validation_tracker import PaperValidationTracker
-        paper_tracker = PaperValidationTracker()
+        from .config import PAPER_INITIAL_CAPITAL
+        paper_tracker = PaperValidationTracker(total_capital=PAPER_INITIAL_CAPITAL)
         execution_engine.set_tracker(paper_tracker)
     
     if PAPER_TRADING:
@@ -121,7 +125,7 @@ async def main():
     from .config import MOMENTUM_THRESHOLD, MOMENTUM_MIN_LIQUIDITY, TOTAL_CAPITAL_POOL
     strategies = [
         TwoSidedMMStrategy(),
-        NewsStrategy(poll_interval=15, data_fetcher=data_fetcher),
+        NewsStrategy(poll_interval=300, data_fetcher=data_fetcher),
         MomentumStrategy(
             window_size=10, 
             momentum_threshold=MOMENTUM_THRESHOLD if not TEST_MODE else 0.001, 
@@ -160,8 +164,19 @@ async def main():
     loops_since_last_trade = 0
     hourly_tracker = HourlyCalibrationTracker()
     current_hour = datetime.datetime.now().hour
+    market_data_map = {}  # last enriched book snapshot, reused by the emergency stop
     while True:
         try:
+            # --- SAFETY LAYER GUARD CHECKS ---
+            if await safety_layer.is_kill_switch_active():
+                logger.critical("SAFETY HALT: Emergency Kill Switch is ACTIVE! Initiating safety lockdown.")
+                await safety_layer.trigger_emergency_stop(market_data_map)
+                break
+
+            daily_loss_ok = await safety_layer.check_daily_loss()
+            ws_health_ok = await safety_layer.check_ws_health(ws_client)
+            await safety_layer.run_stale_order_watchdog()
+
             loop_stats = {
                 "scanned": 0,
                 "selected": 0,
@@ -185,6 +200,16 @@ async def main():
             candidate_markets = market_filter.filter_markets(markets)
             loop_stats["selected"] = len(candidate_markets)
             
+            # Dynamically subscribe candidate tokens to live WebSocket feed
+            cand_tokens = []
+            for cm in candidate_markets[:30]:
+                for tok in cm.get("tokens", []):
+                    tid = tok.get("token_id")
+                    if tid and str(tid) not in ws_client.subscriptions:
+                        cand_tokens.append(str(tid))
+            if cand_tokens:
+                await ws_client.subscribe(cand_tokens)
+
             # 3. Enrich Market Data
             enriched_tokens = []
             process_candidates = candidate_markets[:30]
@@ -291,7 +316,10 @@ async def main():
                     side=fill["side"],
                     strategy=fill.get("strategy", "PMM"),
                     spread=fill.get("spread", 0.0),
-                    slippage=fill.get("slippage", 0.0)
+                    slippage=fill.get("slippage", 0.0),
+                    is_maker=fill.get("is_maker", True),
+                    order_id=fill.get("order_id"),
+                    fee=fill.get("fee")
                 )
                 risk_manager.update_after_trade(success=True, token_id=fill["token_id"], pnl=pnl, strategy=fill.get("strategy", "PMM"))
 
@@ -303,18 +331,26 @@ async def main():
             for exit_cand in exits:
                 tok_id = exit_cand["token_id"]
                 is_emergency = "SL" in exit_cand["reason"]
-                quoted_price = exit_cand["price"]
+                # Maker exits (TP attempts, two-sided MM unwinds) rest on the book;
+                # only stop-losses and TP fallbacks cross the spread.
+                is_aggressive_exit = is_emergency or exit_cand.get("is_maker", True) is False
+                exit_market_data = market_data_map.get(tok_id)
+                if exit_market_data is None:
+                    # Position filtered out of this loop's universe: fetch its book directly
+                    exit_market_data = await data_fetcher.get_fresh_orderbook_rest(tok_id)
+                quoted_price = round_to_tick(
+                    exit_cand["price"], get_tick_size(exit_market_data), "SELL", aggressive=is_aggressive_exit
+                )
                 
                 # Check if we already have a pending SELL order for this token to avoid duplicates
                 pending_sells = [o for o in execution_engine.pending_orders if o["token_id"] == tok_id and o["side"] == "SELL"]
                 if pending_sells:
-                    if is_emergency:
-                        # Cancel existing passive sell to execute immediate emergency SL exit
+                    if is_aggressive_exit:
+                        # Cancel existing passive sell to execute an immediate taker exit (SL / TP fallback)
                         for o in pending_sells:
                             await execution_engine.cancel_order(o["order_id"])
                     else:
-                        # Repricing logic: If the market moved, cancel the stale order and reprice
-                        # We reprice if our new exit price differs from the resting price
+                        # If existing passive sell is already placed, check if it needs repricing
                         o = pending_sells[0]
                         if abs(o["price"] - quoted_price) >= 1e-4:
                             logger.info(f"REPRICING EXIT: Cancelling stale exit order {o['order_id']} at {o['price']:.4f} to reprice at {quoted_price:.4f}")
@@ -334,8 +370,8 @@ async def main():
                     price=quoted_price,
                     size=exit_cand["size"],
                     side="SELL",
-                    market_data=market_data_map.get(tok_id),
-                    is_aggressive=True,
+                    market_data=exit_market_data,
+                    is_aggressive=is_aggressive_exit,
                     is_emergency=is_emergency,
                     signal_delta=0,
                     signal_spread=exit_cand.get("spread", 0)
@@ -350,7 +386,11 @@ async def main():
                         side="SELL",
                         strategy="EXIT_" + exit_cand["reason"].split()[0],
                         spread=exit_cand.get("spread", 0),
-                        slippage=result.get("slippage", 0)
+                        slippage=result.get("slippage", 0),
+                        is_maker=result.get("is_maker", False),
+                        order_id=result.get("order_id"),
+                        exit_reason=exit_cand["reason"],
+                        fee=result.get("fee")
                     )
                     risk_manager.update_after_trade(success=True, token_id=tok_id, pnl=pnl, strategy="EXIT_" + exit_cand["reason"].split()[0])
                     logger.info(f"EXIT EXECUTED: {tok_id[:20]}... | PnL: {pnl:+.4f} | Total Realized: {position_manager.realized_pnl:+.4f}")
@@ -411,7 +451,9 @@ async def main():
                                     side="BUY",
                                     strategy="HEDGE",
                                     spread=opp_market_info.get("spread", 0),
-                                    slippage=result.get("slippage", 0)
+                                    slippage=result.get("slippage", 0),
+                                    is_maker=False,
+                                    fee=result.get("fee")
                                 )
                                 risk_manager.update_after_trade(success=True, token_id=opposing_token_id, strategy="HEDGE")
 
@@ -509,11 +551,27 @@ async def main():
                     })
 
                 # ----------------------------------------------------------
+                # Safety Layer Check before trade entry
+                # ----------------------------------------------------------
+                if not daily_loss_ok:
+                    logger.warning("SafetyLayer: Daily loss limit reached. Skipping new trade entries.")
+                    loop_stats["rejected_noise"] += 1
+                    continue
+
+                if not ws_health_ok:
+                    logger.warning("SafetyLayer: WebSocket data stale. Skipping new trade entries.")
+                    loop_stats["rejected_noise"] += 1
+                    continue
+
+                # ----------------------------------------------------------
                 # Risk Validation (uses freshly validated market data)
                 # ----------------------------------------------------------
                 if risk_manager.validate_trade(signal, live_market_data):
                     hourly_tracker.record_accepted()
                     dynamic_size = risk_manager.calculate_position_size(signal, live_market_data)
+                    if dynamic_size <= 0:
+                        loop_stats["rejected_noise"] += 1
+                        continue
                     
                     # Apply asymmetric inventory skew to order price (Week 2B)
                     mid_price = (live_market_data.get("best_bid", 0.5) + live_market_data.get("best_ask", 0.5)) / 2
@@ -527,37 +585,15 @@ async def main():
                     )
                     quoted_price = round(max(0.01, min(0.99, signal['price'] - skew)), 4)
                     
-                    # --- DYNAMIC AGGRESSIVENESS SCALING LAYER ---
-                    is_news = (signal.get('strategy') == 'NewsStrategy')
-                    if is_news and score >= 70:
-                        # Breaking news detected! Increase position size to 30-40% of capital
-                        total_capital = paper_tracker.total_capital if paper_tracker else TOTAL_CAPITAL_POOL
-                        # Scale linearly from 30% of capital at score 70 to 40% of capital at score 100
-                        allocation_pct = 0.30 + 0.10 * (score - 70) / 30
-                        capital_to_risk = total_capital * allocation_pct
-                        
-                        # Fetch available cash/capital to clamp sizing
-                        if paper_tracker:
-                            available_cash = paper_tracker.virtual_cash
-                        else:
-                            current_prices = {tid: pos['avg_price'] for tid, pos in position_manager.positions.items()}
-                            total_exposure = sum(pos['size'] * current_prices.get(tid, pos['avg_price']) for tid, pos in position_manager.positions.items())
-                            available_cash = max(0.0, TOTAL_CAPITAL_POOL - total_exposure)
-                            
-                        capital_to_risk = min(capital_to_risk, available_cash)
-                        
-                        entry_price = quoted_price if quoted_price > 0 else (live_market_data.get("best_ask") or 0.50)
-                        dynamic_size = round(capital_to_risk / entry_price, 2)
-                        
-                        is_aggressive = True
-                        logger.info(
-                            f"AGGRESSIVENESS_SCALE | BREAKING NEWS DETECTED | "
-                            f"score={score:.1f} | total_capital=${total_capital:.2f} | "
-                            f"allocation_pct={allocation_pct*100:.1f}% | risk_value=${capital_to_risk:.2f} | "
-                            f"adjusted_size={dynamic_size:.2f} | is_aggressive={is_aggressive}"
-                        )
-                    else:
-                        is_aggressive = (score >= 85)
+                    # Execution aggressiveness: taker for high conviction or news
+                    is_aggressive = is_aggressive_signal(signal)
+                    
+                    # Safety check: Portfolio Exposure Cap
+                    order_val = dynamic_size * quoted_price
+                    if not await safety_layer.check_exposure_cap(order_val):
+                        logger.warning(f"SafetyLayer: Order for {tok_id[:20]} blocked due to portfolio exposure cap.")
+                        loop_stats["rejected_noise"] += 1
+                        continue
 
                     # Execution
                     result = await execution_engine.place_limit_order(
@@ -581,13 +617,16 @@ async def main():
                             side=signal['side'],
                             strategy=signal.get('strategy', 'Unknown'),
                             spread=live_market_data.get('spread', 0),
-                            slippage=result.get("slippage", 0)
+                            slippage=result.get("slippage", 0),
+                            is_maker=result.get("is_maker", not is_aggressive),
+                            order_id=result.get("order_id"),
+                            fee=result.get("fee")
                         )
                         risk_manager.update_after_trade(success=True, token_id=tok_id, strategy=signal.get('strategy', 'Unknown'))
                         logger.info(
                             f"TRADE_EXECUTED: {tok_id[:20]}... | "
                             f"side={signal['side']} | data_source={data_source} | "
-                            f"size={dynamic_size:.2f} | price={quoted_price:.4f}"
+                            f"size={result.get('fill_size', dynamic_size):.2f} | price={result.get('fill_price', quoted_price):.4f}"
                         )
 
                     elif "profit" in result.get("error", "").lower():

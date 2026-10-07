@@ -8,7 +8,7 @@ from app.execution_engine import ExecutionEngine
 from app.safety_layer import SafetyLayer
 from app.redis_manager import RedisManager
 
-def test_safety_layer_killswitch():
+def test_safety_layer_killswitch(book):
     """Verify that kill switch file detection works and triggers lockdowns."""
     pm = PositionManager()
     pm.positions.clear()
@@ -25,7 +25,7 @@ def test_safety_layer_killswitch():
         # Open a dummy position
         pm.positions["dummy_token"] = {"size": 100.0, "avg_price": 0.5, "entry_time": time.time(), "strategy": "PMM"}
         # Place a dummy pending limit order
-        await ee.place_limit_order("dummy_token", 0.45, 10.0, "BUY")
+        await ee.place_limit_order("dummy_token", 0.45, 10.0, "BUY", market_data=book(0.48, 0.52))
         assert len(ee.pending_orders) == 1
         
         # 2. Trigger kill switch
@@ -35,7 +35,7 @@ def test_safety_layer_killswitch():
         assert await safety.is_kill_switch_active()
         
         # 3. Trigger emergency stop
-        await safety.trigger_emergency_stop()
+        await safety.trigger_emergency_stop({"dummy_token": book(0.48, 0.52)})
         
         # Orders must be cancelled
         assert len(ee.pending_orders) == 0
@@ -101,14 +101,14 @@ def test_safety_layer_exposure_cap():
     asyncio.run(run_test())
 
 
-def test_stale_order_watchdog():
+def test_stale_order_watchdog(book):
     """Verify that stale limit orders are identified and cancelled by watchdog sweeps."""
     ee = ExecutionEngine(paper_trading=True)
     safety = SafetyLayer(execution_engine=ee)
     
     async def run_test():
         # Place a fresh order
-        await ee.place_limit_order("token_c", 0.50, 10.0, "BUY")
+        await ee.place_limit_order("token_c", 0.50, 10.0, "BUY", market_data=book(0.49, 0.51))
         assert len(ee.pending_orders) == 1
         
         # Modify the order timestamp to make it stale (older than 60s)

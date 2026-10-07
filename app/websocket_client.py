@@ -40,6 +40,7 @@ class WebsocketClient:
         while self.running:
             try:
                 async with websockets.connect(self.uri) as websocket:
+                    self._ws = websocket
                     self._reconnect_count += 1
                     self.last_message_time = time.time()
                     logger.info(f"WS_RECONNECTED (attempt #{self._reconnect_count}): {self.uri}")
@@ -81,15 +82,25 @@ class WebsocketClient:
             except Exception as e:
                 logger.error(f"WS Connection failed: {e}. Retrying in 5s...")
                 await asyncio.sleep(5)
+            finally:
+                self._ws = None
 
     async def subscribe(self, token_ids):
         """Subscribe to specific token updates."""
-        for tid in token_ids:
+        new_ids = [str(tid) for tid in token_ids if str(tid) not in self.subscriptions]
+        for tid in new_ids:
             self.subscriptions.add(tid)
-        
-        # If already connected, we'd need to send a message. 
-        # For simplicity, we assume subscription happens before or during connection setup.
-        # Fixed implementation would send a sub message here if websocket is open.
+
+        if new_ids and getattr(self, "_ws", None) is not None:
+            try:
+                msg = {
+                    "type": "subscribe",
+                    "assets_ids": new_ids
+                }
+                await self._ws.send(json.dumps(msg))
+                logger.info(f"WS_DYNAMIC_SUBSCRIBE: Subscribed {len(new_ids)} tokens to active WebSocket.")
+            except Exception as e:
+                logger.debug(f"WS dynamic subscribe error: {e}")
 
     async def _subscribe_all(self, websocket):
         """Send subscription messages for all tracked tokens."""

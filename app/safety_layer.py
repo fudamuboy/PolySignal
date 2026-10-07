@@ -27,10 +27,13 @@ class SafetyLayer:
             pass
         return False
 
-    async def trigger_emergency_stop(self):
-        """Cancel all pending orders and exit/close positions."""
+    async def trigger_emergency_stop(self, market_data_map=None):
+        """Cancel all pending orders and exit/close positions.
+        market_data_map: latest {token_id: market_data} snapshot, used so paper
+        exits are simulated against the real book instead of an arbitrary price."""
         logger.critical("EMERGENCY KILL SWITCH ACTIVE! Initiating safety lockdown...")
-        
+        market_data_map = market_data_map or {}
+
         # 1. Cancel all resting limit orders
         if self.ee:
             pending = list(self.ee.pending_orders)
@@ -49,17 +52,33 @@ class SafetyLayer:
                 if size > 0:
                     try:
                         logger.warning(f"SafetyLayer: Liquidating emergency exit for {token_id} (size={size})")
-                        # Place immediate aggressive limit order to exit
-                        await self.ee.place_limit_order(
+                        # Lowest valid price: sweeps the bid side of the book
+                        result = await self.ee.place_limit_order(
                             token_id=token_id,
-                            price=0.001,  # Force immediate sell taker execution
+                            price=0.001,
                             size=size,
                             side="SELL",
+                            market_data=market_data_map.get(token_id),
                             is_aggressive=True,
                             is_emergency=True,
                             strategy="EMERGENCY_EXIT"
                         )
-                        self.pm.update_position(token_id, size, 0.001, side="SELL", strategy="EMERGENCY_EXIT")
+                        if result.get("status") == "SUCCESS":
+                            self.pm.update_position(
+                                token_id,
+                                result.get("fill_size", size),
+                                result.get("fill_price", 0.001),
+                                side="SELL",
+                                strategy="EMERGENCY_EXIT",
+                                is_maker=False,
+                                fee=result.get("fee"),
+                                exit_reason="EMERGENCY_EXIT"
+                            )
+                        else:
+                            logger.error(
+                                f"SafetyLayer: Emergency exit for {token_id} not filled "
+                                f"({result.get('error', 'unknown')}). Position remains open."
+                            )
                     except Exception as e:
                         logger.error(f"SafetyLayer: Failed emergency position close for {token_id}: {e}")
 
@@ -122,3 +141,21 @@ class SafetyLayer:
                 f"Cancelling stale order."
             )
             await self.ee.cancel_order(order["order_id"])
+
+    async def check_ws_health(self, ws_client) -> bool:
+        """
+        Verify WebSocket connection health and data freshness.
+        Blocks trading if data is critically stale (> 3x DATA_AGE_BLOCK_SECONDS).
+        """
+        if not ws_client:
+            return True
+        from .config import DATA_AGE_BLOCK_SECONDS
+        age = ws_client.data_age_seconds
+        if age > DATA_AGE_BLOCK_SECONDS * 3:
+            logger.critical(
+                f"SafetyLayer: CRITICAL WS STALENESS DETECTED! Last message age: {age:.1f}s > {DATA_AGE_BLOCK_SECONDS*3}s. "
+                f"Halting new trade entries for data integrity."
+            )
+            return False
+        return True
+

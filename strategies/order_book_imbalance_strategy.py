@@ -9,8 +9,8 @@ from app.config import (
 # ── OBI Quality Constants ────────────────────────────────────────────────────
 # Raised from 0.65: only trade when bids overwhelmingly dominate the book
 OBI_IMBALANCE_THRESHOLD      = 0.80   # min OBI ratio required
-OBI_DEPTH_RATIO_MIN          = 3.0    # bid_depth must be >= 3x ask_depth
-OBI_MAX_SPREAD               = 0.005  # 0.5% — tight book only (filters stale/wide books)
+OBI_DEPTH_RATIO_MIN          = 1.5    # bid_depth must be >= 1.5x ask_depth (realistic liquid threshold)
+OBI_MAX_SPREAD               = 0.01   # 1.0% — tight book only (compatible with 1-cent tick books)
 OBI_MIN_DEPTH_USD            = 500.0  # minimum total depth in USD
 OBI_MIN_DEPTH_USD_TEST       = 100.0  # relaxed floor for paper/test mode
 OBI_SCORE_FLOOR              = 85     # force aggressive classification (honest taker EV cost)

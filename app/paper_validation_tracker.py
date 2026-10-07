@@ -3,7 +3,8 @@ import json
 import os
 from pathlib import Path
 from .logger import logger
-from .config import GAMMA_BID, GAMMA_ASK, PMM_TOTAL_CAPITAL
+from .paper_fill_model import resting_order_crossed, maker_fee_rate
+from .config import GAMMA_BID, GAMMA_ASK, PMM_TOTAL_CAPITAL, PAPER_INITIAL_CAPITAL
 
 class PaperValidationTracker:
     """
@@ -11,7 +12,7 @@ class PaperValidationTracker:
     Manages virtual account balances, queue priority simulation, fill latency,
     unrealized/realized PnLs, drawdowns, missed opportunities, and hourly reports.
     """
-    def __init__(self, total_capital=100.0):
+    def __init__(self, total_capital=PAPER_INITIAL_CAPITAL):
         self.total_capital = total_capital
         self.virtual_cash = total_capital
         self.virtual_positions = {}  # {token_id: {'size': float, 'avg_price': float}}
@@ -99,10 +100,10 @@ class PaperValidationTracker:
 
     def process_resting_tick(self, pending_orders, market_data_map):
         """
-        Statefully decrement queue depths for resting orders.
-        Fills orders if:
-          1. Queue depth is fully depleted (remaining <= 0)
-          2. The market price moves past our limit price (instant fill)
+        Fill resting maker orders only when the opposite side of the book has
+        traded through our limit (ask <= our bid / bid >= our ask). Fills happen
+        at our own limit price. Touch-only fills are never assumed because book
+        snapshots cannot reveal our queue position (conservative by design).
         """
         fills = []
         for order in list(pending_orders):
@@ -111,81 +112,38 @@ class PaperValidationTracker:
             price = order["price"]
             size = order["size"]
             side = order["side"]
-            
+
             mdata = market_data_map.get(token_id)
             if not mdata:
                 continue
-                
-            best_bid = float(mdata.get("best_bid") or 0.0)
-            best_ask = float(mdata.get("best_ask") or 0.0)
-            last_price = float(mdata.get("last_price") or 0.0)
-            
+
             queue_info = self.order_queue_depths.get(order_id)
             if not queue_info:
                 continue
-                
-            filled = False
+
+            if not resting_order_crossed(side, price, mdata):
+                continue
+
             fill_price = price
-            
-            # 1. Price crossed strictly past our limit -> instant fill
-            if side == "BUY":
-                if 0.0 < best_ask <= price:
-                    filled = True
-                    fill_price = best_ask
-                elif 0.0 < last_price < price:
-                    filled = True
-                    fill_price = last_price
-            else:  # SELL
-                if best_bid >= price > 0.0:
-                    filled = True
-                    fill_price = best_bid
-                elif 0.0 < last_price > price:
-                    filled = True
-                    fill_price = last_price
-                    
-            # 2. Touch-price queue depletion
-            if not filled:
-                # If market last trade price touches our limit, deplete the queue
-                if abs(last_price - price) < 1e-4:
-                    # Deplete queue by a simulated trade size representing queue velocity
-                    depletion = round(random.uniform(2.0, 8.0), 2)
-                    queue_info["remaining"] = max(0.0, round(queue_info["remaining"] - depletion, 2))
-                    
-                    # Log queue Position Diagnostics
-                    initial = queue_info["initial"]
-                    remaining = queue_info["remaining"]
-                    pos_pct = (remaining / initial * 100) if initial > 0 else 0.0
-                    logger.info(
-                        f"QUEUE_DIAGNOSTIC | order={order_id} | side={side} | price={price:.4f} | "
-                        f"remaining={remaining:.2f} shares | initial={initial:.2f} | queue_position={pos_pct:.1f}%"
-                    )
-                    
-                    if queue_info["remaining"] <= 0.0:
-                        filled = True
-                        fill_price = price
-                        
-            if filled:
-                latency = time.time() - queue_info["timestamp"]
-                self.total_fills += 1
-                self.total_latency_seconds += latency
-                self.total_spread_sum += float(mdata.get("spread", 0.0))
-                
-                # Execute position update in virtual account
-                self._update_virtual_position(token_id, size, fill_price, side, mdata.get("spread", 0.0))
-                
-                fills.append({
-                    "order_id": order_id,
-                    "token_id": token_id,
-                    "fill_price": fill_price,
-                    "fill_size": size,
-                    "side": side,
-                    "latency": latency
-                })
-                
-                # Remove from tracking
-                if order_id in self.order_queue_depths:
-                    del self.order_queue_depths[order_id]
-                    
+            fee = size * fill_price * maker_fee_rate(fill_price, mdata)
+            latency = time.time() - queue_info["timestamp"]
+            self.total_fills += 1
+            self.total_latency_seconds += latency
+            self.total_spread_sum += float(mdata.get("spread", 0.0))
+
+            self._update_virtual_position(token_id, size, fill_price, side, mdata.get("spread", 0.0), fee=fee)
+
+            fills.append({
+                "order_id": order_id,
+                "token_id": token_id,
+                "fill_price": fill_price,
+                "fill_size": size,
+                "side": side,
+                "fee": fee,
+                "latency": latency
+            })
+            del self.order_queue_depths[order_id]
+
         return fills
 
     def record_cancellation(self, order_id):
@@ -354,8 +312,10 @@ class PaperValidationTracker:
         logger.info(f"Missed Opportunity Rate : {report_entry['missed_opportunity_rate_pct']:.1f}% ({self.missed_profitable_opportunities}/{self.resolved_rejections} hits)")
         logger.info("#"*60 + "\n")
 
-    def _update_virtual_position(self, token_id, size, price, side, spread):
-        """Update position state and calculate virtual realized PnL."""
+    def _update_virtual_position(self, token_id, size, price, side, spread, fee=0.0):
+        """Update position state and calculate virtual realized PnL (net of fees)."""
+        self.virtual_cash = max(0.0, round(self.virtual_cash - fee, 4))
+        self.realized_pnl -= fee
         if side == 'BUY':
             cost = size * price
             if cost > self.virtual_cash:
@@ -401,5 +361,3 @@ class PaperValidationTracker:
 def datetime_string():
     import datetime
     return datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-
-import random
