@@ -26,3 +26,9 @@ temp_log.txt
 # Sensitive Credentials
 .env
 .env.production
+
+# Runtime state rewritten on every run
+storage/bot.pid
+storage/killswitch.signal
+storage/active_markets_sampling.json
+storage/active_markets_snapshot.json

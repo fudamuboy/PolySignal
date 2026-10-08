@@ -29,6 +29,7 @@ from strategies.order_book_imbalance_strategy import OrderBookImbalanceStrategy
 from .websocket_client import WebsocketClient
 from .token_blacklist import TokenBlacklist
 from .paper_fill_model import get_tick_size, round_to_tick
+from .config import PMM_PAIR_SHARES
 
 
 class HourlyCalibrationTracker:
@@ -116,6 +117,7 @@ async def main():
         from .config import PAPER_INITIAL_CAPITAL
         paper_tracker = PaperValidationTracker(total_capital=PAPER_INITIAL_CAPITAL)
         execution_engine.set_tracker(paper_tracker)
+        paper_tracker.trade_source = ws_client  # real trade prints drive maker queue fills
     
     if PAPER_TRADING:
         logger.info("Startup: Recovering database positions for fresh Paper Trading session.")
@@ -124,7 +126,6 @@ async def main():
     # Initialize strategies
     from .config import MOMENTUM_THRESHOLD, MOMENTUM_MIN_LIQUIDITY, TOTAL_CAPITAL_POOL
     strategies = [
-        TwoSidedMMStrategy(),
         NewsStrategy(poll_interval=300, data_fetcher=data_fetcher),
         MomentumStrategy(
             window_size=10, 
@@ -134,6 +135,25 @@ async def main():
         VolumeSpikeStrategy(window_size=8, spike_threshold=3.0),
         OrderBookImbalanceStrategy()  # v2: tightened thresholds, log-delta, spread filter
     ]
+    from .config import ENABLED_STRATEGIES, PAIR_MM_STRATEGY
+    known = {s.name for s in strategies} | {PAIR_MM_STRATEGY}
+    if ENABLED_STRATEGIES.strip().lower() == "all":
+        enabled = known
+    else:
+        enabled = {name.strip() for name in ENABLED_STRATEGIES.split(",") if name.strip()}
+        unknown = enabled - known
+        if unknown:
+            raise ValueError(f"ENABLED_STRATEGIES contains unknown strategies: {sorted(unknown)}")
+    strategies = [s for s in strategies if s.name in enabled]
+
+    # The pair market maker manages its own quotes and inventory instead of emitting signals
+    pair_mm = None
+    if PAIR_MM_STRATEGY in enabled:
+        pair_mm = TwoSidedMMStrategy(
+            execution_engine, position_manager, risk_manager=risk_manager,
+            data_fetcher=data_fetcher, tracker=paper_tracker
+        )
+    logger.info(f"Enabled strategies: {[s.name for s in strategies] + ([PAIR_MM_STRATEGY] if pair_mm else [])}")
     
     # Threshold for SignalEngine (0-100 scale)
     confidence_threshold = 70 if not TEST_MODE else 10
@@ -395,67 +415,9 @@ async def main():
                     risk_manager.update_after_trade(success=True, token_id=tok_id, pnl=pnl, strategy="EXIT_" + exit_cand["reason"].split()[0])
                     logger.info(f"EXIT EXECUTED: {tok_id[:20]}... | PnL: {pnl:+.4f} | Total Realized: {position_manager.realized_pnl:+.4f}")
 
-            # --- LEG-RISK HEDGE ENGINE (Priority 1B) ---
-            for token_id, pos in list(position_manager.positions.items()):
-                market_info = market_data_map.get(token_id)
-                if not market_info:
-                    continue
-                
-                opposing_token_id = None
-                for tok in market_info.get("tokens", []):
-                    tid = tok.get("token_id")
-                    if tid and str(tid) != str(token_id):
-                        opposing_token_id = str(tid)
-                        break
-                        
-                # Leg-risk hedging only applies to two-sided market making positions (e.g., TwoSidedMMStrategy)
-                # We do NOT want to hedge directional positions opened by OBI, News, Momentum, or Volume Spike strategies.
-                is_mm_strategy = pos.get("strategy") in ["TwoSidedMMStrategy", "SpreadStrategy", "PMM"]
-                if is_mm_strategy and opposing_token_id and opposing_token_id not in position_manager.positions:
-                    # We hold token_id, but do NOT hold the opposing leg!
-                    # Check if the position has been open for too long (e.g. 30 seconds = 3 loops at 10s polling)
-                    entry_time = pos.get("entry_time", time.time())
-                    if time.time() - entry_time >= 30:
-                        opp_market_info = market_data_map.get(opposing_token_id)
-                        if opp_market_info:
-                            hedge_price = opp_market_info.get("best_ask") or opp_market_info.get("last_price") or 0.50
-                            
-                            # Check if we already have a pending BUY order for this opposing token
-                            pending_buys = [o for o in execution_engine.pending_orders if o["token_id"] == opposing_token_id and o["side"] == "BUY"]
-                            if pending_buys:
-                                for o in pending_buys:
-                                    await execution_engine.cancel_order(o["order_id"])
-                            
-                            logger.warning(
-                                f"LEG-RISK HEDGE TRIGGERED: Holding {token_id[:20]} but missing {opposing_token_id[:20]}. "
-                                f"Executing active taker hedge BUY on opposing leg at {hedge_price:.4f}."
-                            )
-                            
-                            result = await execution_engine.place_limit_order(
-                                token_id=opposing_token_id,
-                                price=hedge_price,
-                                size=pos["size"],
-                                side="BUY",
-                                market_data=opp_market_info,
-                                is_aggressive=True,
-                                is_emergency=True,
-                                signal_delta=0,
-                                signal_spread=opp_market_info.get("spread", 0)
-                            )
-                            if result['status'] == "SUCCESS":
-                                loop_stats["executed"] += 1
-                                position_manager.update_position(
-                                    token_id=opposing_token_id,
-                                    size=result.get('fill_size', pos["size"]),
-                                    price=result.get('fill_price', hedge_price),
-                                    side="BUY",
-                                    strategy="HEDGE",
-                                    spread=opp_market_info.get("spread", 0),
-                                    slippage=result.get("slippage", 0),
-                                    is_maker=False,
-                                    fee=result.get("fee")
-                                )
-                                risk_manager.update_after_trade(success=True, token_id=opposing_token_id, strategy="HEDGE")
+            # --- PAIR MARKET MAKER (quotes, merges and unwinds its own YES/NO inventory) ---
+            if pair_mm is not None:
+                loop_stats["executed"] += await pair_mm.step(enriched_tokens, market_data_map)
 
             # Update telemetry and check outcomes of rejections (Week 2B Paper Validation Mode)
             if PAPER_TRADING and paper_tracker:
@@ -482,6 +444,12 @@ async def main():
                 # Blacklist gate — skip tokens with repeated drift failures
                 # ----------------------------------------------------------
                 if token_blacklist.is_blacklisted(tok_id):
+                    loop_stats["rejected_noise"] += 1
+                    continue
+
+                # One resting order per token and side: re-quoting every loop used to stack
+                # several identical orders that all filled together, multiplying position size
+                if any(o["token_id"] == tok_id and o["side"] == signal["side"] for o in execution_engine.pending_orders):
                     loop_stats["rejected_noise"] += 1
                     continue
 
@@ -569,6 +537,10 @@ async def main():
                 if risk_manager.validate_trade(signal, live_market_data):
                     hourly_tracker.record_accepted()
                     dynamic_size = risk_manager.calculate_position_size(signal, live_market_data)
+                    if signal.get('strategy') == 'TwoSidedMMStrategy' and dynamic_size > 0:
+                        # A YES+NO pair only pays a fixed $1 per share if both legs hold the SAME
+                        # number of shares; dollar-based sizing left most of the cheap leg unhedged.
+                        dynamic_size = PMM_PAIR_SHARES
                     if dynamic_size <= 0:
                         loop_stats["rejected_noise"] += 1
                         continue

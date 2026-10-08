@@ -1,11 +1,14 @@
-asyncio
-httpx
-pandas
-pip-install-test
-py-clob-client
-pytest
-python-dotenv
-sqlalchemy
+# Core
+py-clob-client>=0.34
+httpx>=0.28
+websockets==16.0
+python-dotenv>=1.2
+pandas>=2.2
+
+# Optional production backends (the bot falls back to SQLite / in-memory cache without them)
 psycopg2-binary
 redis
-websockets==16.0
+
+# Tests
+pytest>=9.0
+pytest-asyncio>=1.3

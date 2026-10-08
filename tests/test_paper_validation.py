@@ -78,3 +78,66 @@ def test_paper_tracker_missed_opportunities():
     
     assert missed_opp_rate == 50.0
     print("✅ Missed opportunities outcome and rate calculations verified!")
+
+
+class _Trades:
+    """Minimal stand-in for WebsocketClient.get_trades_since."""
+    def __init__(self):
+        self.trades = {}
+
+    def add(self, token_id, price, size):
+        self.trades.setdefault(token_id, []).append({"ts": time.time() + 1, "price": price, "size": size, "side": "SELL"})
+
+    def get_trades_since(self, token_id, since_ts):
+        return [t for t in self.trades.get(token_id, []) if t["ts"] > since_ts]
+
+
+def _book_md(bids, asks):
+    return {
+        "best_bid": bids[0][0], "best_ask": asks[0][0], "spread": 0.02,
+        "orderbook": {"bids": [{"price": str(p), "size": str(s)} for p, s in bids],
+                      "asks": [{"price": str(p), "size": str(s)} for p, s in asks]},
+    }
+
+
+def test_trades_at_our_level_consume_queue_then_fill():
+    tracker = PaperValidationTracker(total_capital=100.0)
+    trades = _Trades()
+    tracker.trade_source = trades
+    md = _book_md([(0.50, 100.0)], [(0.52, 100.0)])
+
+    # Joining the 0.50 bid: 100 shares are ahead of us
+    tracker.record_order_placement("o1", "tok", 0.50, 10.0, "BUY", md)
+    order = {"order_id": "o1", "token_id": "tok", "price": 0.50, "size": 10.0, "side": "BUY"}
+
+    trades.add("tok", 0.50, 95.0)
+    assert tracker.process_resting_tick([order], {"tok": md}) == []
+    assert tracker.order_queue_depths["o1"]["remaining"] == 5.0
+
+    # Next 8 shares: 5 finish the queue, 3 fill us (partial)
+    trades.trades["tok"] = []
+    trades.add("tok", 0.50, 8.0)
+    fills = tracker.process_resting_tick([order], {"tok": md})
+    assert fills[0]["fill_size"] == 3.0 and fills[0]["fully_filled"] is False
+    assert fills[0]["fill_price"] == 0.50
+
+
+def test_trade_through_our_price_fills_fully():
+    tracker = PaperValidationTracker(total_capital=100.0)
+    trades = _Trades()
+    tracker.trade_source = trades
+    md = _book_md([(0.50, 1000.0)], [(0.52, 100.0)])
+    tracker.record_order_placement("o2", "tok", 0.50, 10.0, "BUY", md)
+    order = {"order_id": "o2", "token_id": "tok", "price": 0.50, "size": 10.0, "side": "BUY"}
+
+    trades.add("tok", 0.49, 1.0)  # sellers went below our bid: our level was cleared
+    fills = tracker.process_resting_tick([order], {"tok": md})
+    assert fills[0]["fill_size"] == 10.0 and fills[0]["fully_filled"] is True
+    assert "o2" not in tracker.order_queue_depths
+
+
+def test_order_inside_spread_is_first_in_queue():
+    tracker = PaperValidationTracker(total_capital=100.0)
+    md = _book_md([(0.50, 1000.0)], [(0.53, 100.0)])
+    tracker.record_order_placement("o3", "tok", 0.51, 10.0, "BUY", md)
+    assert tracker.order_queue_depths["o3"]["remaining"] == 0.0

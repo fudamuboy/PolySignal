@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 from .logger import logger
-from .paper_fill_model import resting_order_crossed, maker_fee_rate
+from .paper_fill_model import resting_order_crossed, maker_fee_rate, get_book_levels
 from .config import GAMMA_BID, GAMMA_ASK, PMM_TOTAL_CAPITAL, PAPER_INITIAL_CAPITAL
 
 class PaperValidationTracker:
@@ -37,8 +37,10 @@ class PaperValidationTracker:
         self.resolved_rejections = 0
         self.missed_profitable_opportunities = 0
         
-        # Queue-position diagnostics
-        self.order_queue_depths = {}  # {order_id: {'initial': float, 'remaining': float, 'timestamp': float}}
+        # Queue position of each resting order: shares ahead of us at our price level
+        self.order_queue_depths = {}  # {order_id: {'initial', 'remaining', 'timestamp', 'last_trade_ts', ...}}
+        # Source of real trade prints (WebsocketClient.get_trades_since); None = crossing-only fills
+        self.trade_source = None
         
         # Set up output path
         self.report_dir = Path("storage/logs")
@@ -65,24 +67,18 @@ class PaperValidationTracker:
             raise ValueError(f"Order value {size*price} exceeds available paper cash {self.virtual_cash}")
 
         self.total_placed += 1
-        
-        # Estimate queue depth at placement
-        initial_depth = 50.0  # Default fallback depth in shares
+
+        # Shares already resting at our exact price join the queue ahead of us.
+        # A price better than the current best level means we are first in line.
+        initial_depth = 0.0
         if market_data:
-            best_bid = float(market_data.get("best_bid") or 0.5)
-            best_ask = float(market_data.get("best_ask") or 0.5)
-            spread = best_ask - best_bid
-            
-            # If our order price improves the spread (inside the spread), we have absolute priority (0 shares in front of us)
-            # We bypass this in pytest testing to keep standard queue test cases happy
-            import sys
-            if ((side == "BUY" and price > best_bid) or (side == "SELL" and price < best_ask)) and "pytest" not in sys.modules:
-                initial_depth = 0.0
-            else:
-                # Simple heuristic: deeper books have higher initial queue depth
-                depth_usd = float(market_data.get("bid_depth", 100.0) if side == "BUY" else market_data.get("ask_depth", 100.0))
-                initial_depth = max(10.0, round(depth_usd / price, 2)) if price > 0 else 50.0
-            
+            book_side = "bids" if side == "BUY" else "asks"
+            for level_price, level_size in get_book_levels(market_data, book_side):
+                if abs(level_price - price) < 1e-9:
+                    initial_depth = level_size
+                    break
+
+        now = time.time()
         self.order_queue_depths[order_id] = {
             "token_id": token_id,
             "side": side,
@@ -90,7 +86,8 @@ class PaperValidationTracker:
             "size": size,
             "initial": initial_depth,
             "remaining": initial_depth,
-            "timestamp": time.time()
+            "timestamp": now,
+            "last_trade_ts": now
         }
         
         logger.info(
@@ -100,49 +97,73 @@ class PaperValidationTracker:
 
     def process_resting_tick(self, pending_orders, market_data_map):
         """
-        Fill resting maker orders only when the opposite side of the book has
-        traded through our limit (ask <= our bid / bid >= our ask). Fills happen
-        at our own limit price. Touch-only fills are never assumed because book
-        snapshots cannot reveal our queue position (conservative by design).
+        Simulate maker fills for resting orders. An order fills when:
+          1. the book crosses our price (ask <= our bid / bid >= our ask), or
+          2. a real trade prints through our price (all liquidity at our level
+             and better was consumed), or
+          3. real trades at our exact price consume the queue that was ahead
+             of us at placement; the excess volume fills us (possibly partially).
+        Fills are at our own limit price. Cancellations ahead of us are ignored,
+        so queue progress is slightly pessimistic.
         """
         fills = []
         for order in list(pending_orders):
             order_id = order["order_id"]
             token_id = order["token_id"]
             price = order["price"]
-            size = order["size"]
+            remaining_size = order["size"]
             side = order["side"]
-
-            mdata = market_data_map.get(token_id)
-            if not mdata:
-                continue
 
             queue_info = self.order_queue_depths.get(order_id)
             if not queue_info:
                 continue
+            mdata = market_data_map.get(token_id) or {}
 
-            if not resting_order_crossed(side, price, mdata):
+            fill_qty = 0.0
+            if mdata and resting_order_crossed(side, price, mdata):
+                fill_qty = remaining_size
+            elif self.trade_source is not None:
+                trades = self.trade_source.get_trades_since(token_id, queue_info["last_trade_ts"])
+                if trades:
+                    queue_info["last_trade_ts"] = trades[-1]["ts"]
+                for trade in trades:
+                    traded_through = trade["price"] < price - 1e-9 if side == "BUY" else trade["price"] > price + 1e-9
+                    if traded_through:
+                        fill_qty = remaining_size
+                        break
+                    if abs(trade["price"] - price) <= 1e-9:
+                        volume = trade["size"]
+                        queue_take = min(queue_info["remaining"], volume)
+                        queue_info["remaining"] -= queue_take
+                        fill_qty = min(remaining_size, fill_qty + volume - queue_take)
+                        if fill_qty >= remaining_size:
+                            break
+
+            if fill_qty <= 1e-9:
                 continue
 
             fill_price = price
-            fee = size * fill_price * maker_fee_rate(fill_price, mdata)
+            fee = fill_qty * fill_price * maker_fee_rate(fill_price, mdata)
             latency = time.time() - queue_info["timestamp"]
             self.total_fills += 1
             self.total_latency_seconds += latency
             self.total_spread_sum += float(mdata.get("spread", 0.0))
 
-            self._update_virtual_position(token_id, size, fill_price, side, mdata.get("spread", 0.0), fee=fee)
+            self._update_virtual_position(token_id, fill_qty, fill_price, side, mdata.get("spread", 0.0), fee=fee)
 
+            fully_filled = fill_qty >= remaining_size - 1e-9
             fills.append({
                 "order_id": order_id,
                 "token_id": token_id,
                 "fill_price": fill_price,
-                "fill_size": size,
+                "fill_size": fill_qty,
                 "side": side,
                 "fee": fee,
-                "latency": latency
+                "latency": latency,
+                "fully_filled": fully_filled
             })
-            del self.order_queue_depths[order_id]
+            if fully_filled:
+                del self.order_queue_depths[order_id]
 
         return fills
 

@@ -46,6 +46,13 @@ POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", 10))
 MIN_LIQUIDITY = float(os.getenv("MIN_LIQUIDITY", 100))
 MAX_SPREAD = float(os.getenv("MAX_SPREAD", 0.01)) # 1.0% max spread — tight liquid markets for positive EV
 MAX_SPREAD_LEGACY = 0.20 # Retained for A/B comparison tests
+# Entry spread caps (relative to mid). A 1-cent tick is already 1.2-2% of a mid-range price,
+# so MAX_SPREAD (1%) blocked almost every entry. Takers pay the spread; makers earn it.
+MAX_TAKER_SPREAD = float(os.getenv("MAX_TAKER_SPREAD", 0.03))
+MAX_MAKER_SPREAD = float(os.getenv("MAX_MAKER_SPREAD", 0.06))
+# Comma-separated strategy class names run by app/main.py. Test one strategy at a time
+# so paper results can be attributed; "all" enables every strategy.
+ENABLED_STRATEGIES = os.getenv("ENABLED_STRATEGIES", "TwoSidedMMStrategy")
 MIN_ENTRY_PRICE = float(os.getenv("MIN_ENTRY_PRICE", 0.20))
 MAX_ENTRY_PRICE = float(os.getenv("MAX_ENTRY_PRICE", 0.80))
 MARKET_COOLDOWN = int(os.getenv("MARKET_COOLDOWN", 600)) # 10 minutes
@@ -144,6 +151,21 @@ MIN_REVERSION_FLOOR       = 0.020 # hard minimum delta — applies in ALL modes 
 GAMMA_BID = 0.08          # Asymmetric entry/buy skew multiplier (heavy protection)
 GAMMA_ASK = 0.02          # Asymmetric exit/sell skew multiplier (light exit discount)
 PMM_TOTAL_CAPITAL = 10.0  # Default capital base for computing inventory mismatch ratio
+# --- PAIR MARKET MAKER (strategies/two_sided_mm_strategy.py) ---
+# Quotes passive bids on BOTH outcomes of a market so that a completed YES+NO pair costs
+# less than the $1 it is guaranteed to pay out. Positions/orders of this strategy are managed
+# by the pair market maker only (no generic SL/TP, no stale-order watchdog).
+PAIR_MM_STRATEGY = "TwoSidedMMStrategy"
+PMM_PAIR_SHARES = float(os.getenv("PMM_PAIR_SHARES", 10.0))       # shares quoted on EACH leg
+PMM_MIN_PAIR_EDGE = float(os.getenv("PMM_MIN_PAIR_EDGE", 0.01))   # min (1 - yes_price - no_price) per share
+PMM_MAX_MARKETS = int(os.getenv("PMM_MAX_MARKETS", 3))            # markets quoted / holding inventory at once
+PMM_MIN_LEG_PRICE = float(os.getenv("PMM_MIN_LEG_PRICE", 0.10))   # skip near-certain markets
+PMM_MAX_LEG_PRICE = float(os.getenv("PMM_MAX_LEG_PRICE", 0.90))
+PMM_MIN_HOURS_TO_END = float(os.getenv("PMM_MIN_HOURS_TO_END", 24))      # avoid markets resolving / live soon
+PMM_MAX_HOURLY_MOVE = float(os.getenv("PMM_MAX_HOURLY_MOVE", 0.03))      # skip markets moving fast
+PMM_LEG_TIMEOUT_S = float(os.getenv("PMM_LEG_TIMEOUT_S", 900))           # max time holding one unmatched leg
+PMM_MAX_ADVERSE_MOVE = float(os.getenv("PMM_MAX_ADVERSE_MOVE", 0.05))    # unwind if held leg's bid falls this far
+PMM_COOLDOWN_S = float(os.getenv("PMM_COOLDOWN_S", 1800))                # no new pair on a market after an unwind
 TOTAL_CAPITAL_POOL = 500.0  # Global virtual capital pool size for dynamic allocation
 
 # --- PRODUCTION INFRASTRUCTURE SETTINGS ---

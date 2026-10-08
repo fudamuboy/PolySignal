@@ -267,11 +267,15 @@ class ExecutionEngine:
         if self.paper_trading and self.tracker:
             # Delegate to our stateful Queue-Priority simulation tracker!
             fills = self.tracker.process_resting_tick(self.pending_orders, market_data_map)
-            filled_ids = {f["order_id"] for f in fills}
-            orders_map = {o["order_id"]: o for o in self.pending_orders if o["order_id"] in filled_ids}
-            
-            self.pending_orders = [o for o in self.pending_orders if o["order_id"] not in filled_ids]
-            
+            orders_map = {o["order_id"]: o for o in self.pending_orders}
+
+            # Partial fills shrink the resting order; full fills remove it
+            for f in fills:
+                order = orders_map.get(f["order_id"])
+                if order is not None:
+                    order["size"] = max(0.0, order["size"] - f["fill_size"])
+            self.pending_orders = [o for o in self.pending_orders if o["size"] > 1e-9]
+
             standard_fills = []
             for f in fills:
                 orig_order = orders_map.get(f["order_id"], {})
@@ -285,7 +289,7 @@ class ExecutionEngine:
                     "fill_size": f["fill_size"],
                     "side": f["side"],
                     "strategy": strat_name,
-                    "spread": market_data_map[f["token_id"]].get("spread", 0.0),
+                    "spread": (market_data_map.get(f["token_id"]) or {}).get("spread", 0.0),
                     "slippage": 0.0,
                     "fee": f.get("fee", 0.0),
                     "is_maker": True
