@@ -12,7 +12,7 @@ from .config import (
     SOLO_MOMENTUM_SIZE_MULTIPLIER, EV_SAFETY_MARGIN,
     MIN_RR_RATIO, MAX_SL_ABSOLUTE, DYNAMIC_SL_FLOOR, MIN_DEPTH_USD,
     MIN_DELTA_FOR_TRADE, RR_ADAPTIVE_SCORE_THRESHOLD, RR_ADAPTIVE_MIN,
-    NEAR_MISS_LOG_LIMIT, SELL_SKIP_CACHE_TTL, MAX_SPREAD,
+    NEAR_MISS_LOG_LIMIT, SELL_SKIP_CACHE_TTL, MAX_SPREAD, MAX_TAKER_SPREAD, MAX_MAKER_SPREAD,
     MIN_DEPTH_USD_TEST, PAPER_TRADING, SOLO_MOMENTUM_MIN_SCORE,
     ZOMBIE_PRICE_CAP, ZOMBIE_BID_FLOOR, ZOMBIE_MAX_SPREAD
 )
@@ -255,16 +255,19 @@ class RiskManager:
                 f"min_rr={effective_min_rr:.2f} | score={score:.2f}"
             )
         # ----------------------------------------------------------------
-        # Fix #6: Spread safety filter — skip BUY if spread > 20%
+        # Fix #6: Spread safety filter for BUY entries.
+        # A taker pays the spread, so it must be tight. A passive maker earns
+        # the spread instead, so it only needs a sanity cap against dead books.
         # ----------------------------------------------------------------
         if side == 'BUY' and market_data and not signal.get("test_mode") and not is_fallback:
             spread = market_data.get('spread', 0)
-            if spread > MAX_SPREAD:
+            max_spread = MAX_TAKER_SPREAD if is_aggressive_signal(signal) else MAX_MAKER_SPREAD
+            if spread > max_spread:
                 logger.warning(
                     f"SPREAD_TOO_WIDE: {token_id} | "
-                    f"Spread={spread:.4f} ({spread*100:.1f}%) > max {MAX_SPREAD*100:.0f}%"
+                    f"Spread={spread:.4f} ({spread*100:.1f}%) > max {max_spread*100:.1f}%"
                 )
-                _calib_reject(f"SPREAD_TOO_WIDE({spread:.4f}>{MAX_SPREAD})")
+                _calib_reject(f"SPREAD_TOO_WIDE({spread:.4f}>{max_spread})")
                 self.last_rejection_reason = "SPREAD_TOO_WIDE"
                 return False
 

@@ -147,6 +147,18 @@ class Database:
             if 'parent_trade_id' not in columns:
                 logger.info("Database Migration: Adding 'parent_trade_id' column to 'trades' table")
                 cursor.execute("ALTER TABLE trades ADD COLUMN parent_trade_id INTEGER DEFAULT NULL")
+
+            # Positions remember their opening strategy so managed inventory (e.g. market-making
+            # pairs) is not handed to the generic SL/TP exit engine after a restart
+            if self.is_postgresql:
+                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'positions'")
+                position_columns = [row[0] for row in cursor.fetchall()]
+            else:
+                cursor.execute("PRAGMA table_info(positions)")
+                position_columns = [column[1] for column in cursor.fetchall()]
+            if 'strategy' not in position_columns:
+                logger.info("Database Migration: Adding 'strategy' column to 'positions' table")
+                cursor.execute("ALTER TABLE positions ADD COLUMN strategy TEXT DEFAULT 'Unknown'")
                 
             conn.commit()
 
@@ -181,7 +193,7 @@ class Database:
             ))
             conn.commit()
 
-    def update_position(self, token_id, size, avg_price):
+    def update_position(self, token_id, size, avg_price, strategy='Unknown'):
         with self._get_connection() as conn:
             cursor = conn.cursor()
             if size <= 0:
@@ -190,31 +202,33 @@ class Database:
                 if self.is_postgresql:
                     # PostgreSQL UPSERT
                     cursor.execute(self._format_query('''
-                        INSERT INTO positions (token_id, size, avg_price, updated_at)
-                        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                        INSERT INTO positions (token_id, size, avg_price, strategy, updated_at)
+                        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
                         ON CONFLICT(token_id) DO UPDATE SET
                             size = EXCLUDED.size,
                             avg_price = EXCLUDED.avg_price,
+                            strategy = EXCLUDED.strategy,
                             updated_at = CURRENT_TIMESTAMP
-                    '''), (token_id, size, avg_price))
+                    '''), (token_id, size, avg_price, strategy))
                 else:
                     # SQLite UPSERT
                     cursor.execute('''
-                        INSERT INTO positions (token_id, size, avg_price, updated_at)
-                        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                        INSERT INTO positions (token_id, size, avg_price, strategy, updated_at)
+                        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
                         ON CONFLICT(token_id) DO UPDATE SET
                             size = excluded.size,
                             avg_price = excluded.avg_price,
+                            strategy = excluded.strategy,
                             updated_at = CURRENT_TIMESTAMP
-                    ''', (token_id, size, avg_price))
+                    ''', (token_id, size, avg_price, strategy))
             conn.commit()
 
     def load_positions(self):
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT token_id, size, avg_price FROM positions')
+            cursor.execute('SELECT token_id, size, avg_price, strategy FROM positions')
             rows = cursor.fetchall()
-            return {row[0]: {'size': row[1], 'avg_price': row[2]} for row in rows}
+            return {row[0]: {'size': row[1], 'avg_price': row[2], 'strategy': row[3] or 'Unknown'} for row in rows}
 
     def clear_all_positions(self):
         """Delete all positions from the database."""

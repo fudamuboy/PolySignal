@@ -1,6 +1,6 @@
 import os
 import time
-from .config import DAILY_MAX_LOSS_LIMIT, MAX_EXPOSURE_CAP, STALE_ORDER_TIMEOUT_SECONDS
+from .config import DAILY_MAX_LOSS_LIMIT, MAX_EXPOSURE_CAP, STALE_ORDER_TIMEOUT_SECONDS, PAIR_MM_STRATEGY
 from .logger import logger
 from .database import Database
 from .redis_manager import RedisManager
@@ -130,6 +130,8 @@ class SafetyLayer:
         current_time = time.time()
         stale_orders = []
         for order in self.ee.pending_orders:
+            if order.get("strategy") == PAIR_MM_STRATEGY:
+                continue  # pair market-maker quotes are repriced/cancelled by the strategy itself
             elapsed = current_time - order.get("timestamp", current_time)
             if elapsed > STALE_ORDER_TIMEOUT_SECONDS:
                 stale_orders.append(order)

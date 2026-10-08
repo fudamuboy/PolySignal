@@ -27,7 +27,6 @@ from app.safety_layer import SafetyLayer
 from app.websocket_client import WebsocketClient
 from app.token_blacklist import TokenBlacklist
 
-from strategies.two_sided_mm_strategy import TwoSidedMMStrategy
 from strategies.news_strategy import NewsStrategy
 from strategies.momentum_strategy import MomentumStrategy
 from strategies.volume_spike_strategy import VolumeSpikeStrategy
@@ -36,72 +35,6 @@ from strategies.order_book_imbalance_strategy import OrderBookImbalanceStrategy
 # ----------------------------------------------------------------------
 # RUNNERS FOR INDIVIDUAL SUB-PROCESSES
 # ----------------------------------------------------------------------
-
-def run_pmm_process(exit_event):
-    """PMM Process: evaluates PMM strategy and pushes signals to Redis."""
-    logger.info("Starting PMM process...")
-    async def loop():
-        db = Database()
-        rm = RedisManager()
-        await rm.connect()
-        df = DataFetcher()
-        mf = MarketFilter()
-        strategy = TwoSidedMMStrategy()
-
-        while not exit_event.is_set():
-            try:
-                markets = await df.fetch_markets()
-                candidates = mf.filter_markets(markets)
-                
-                # Enrich candidate markets using cached data
-                enriched = []
-                for m in candidates[:30]:
-                    tokens = m.get("tokens", [])
-                    for token_data in tokens:
-                        t_id = token_data.get("token_id")
-                        if not t_id: continue
-                        
-                        ob = await df.get_orderbook(t_id)
-                        if not ob: continue
-                        
-                        # Compute mid price and spread
-                        raw_bids = ob.get("bids", [])
-                        raw_asks = ob.get("asks", [])
-                        if not raw_bids or not raw_asks: continue
-                        
-                        def get_price(l):
-                            return float(l.get("price") or l.get("p") or 0.0) if isinstance(l, dict) else float(getattr(l, "price", 0.0))
-                            
-                        best_bid = get_price(raw_bids[0])
-                        best_ask = get_price(raw_asks[0])
-                        mid = (best_bid + best_ask) / 2.0
-                        spread = (best_ask - best_bid) / mid if mid > 0 else 1.0
-                        
-                        token_market = m.copy()
-                        token_market.update({
-                            "token_id": t_id,
-                            "orderbook": ob,
-                            "last_price": mid,
-                            "best_bid": best_bid,
-                            "best_ask": best_ask,
-                            "spread": spread
-                        })
-                        enriched.append(token_market)
-                
-                if enriched:
-                    signals = await strategy.evaluate(enriched)
-                    for sig in signals:
-                        logger.info(f"PMM Engine: Generated signal for {sig['token_id'][:20]}... {sig['side']}")
-                        await rm.push_signal(sig)
-                        
-            except Exception as e:
-                logger.error(f"PMM Process loop error: {e}")
-            await asyncio.sleep(POLLING_INTERVAL)
-            
-        await rm.close()
-
-    asyncio.run(loop())
-
 
 def run_news_process(exit_event):
     """News & Twitter Process: evaluates breaking news alerts and sentiment."""
@@ -237,6 +170,7 @@ class CoordinatorProcess:
             from app.paper_validation_tracker import PaperValidationTracker
             self.tracker = PaperValidationTracker()
             self.ee.set_tracker(self.tracker)
+            self.tracker.trade_source = self.ws
         else:
             self.tracker = None
 
@@ -565,7 +499,8 @@ class MultiprocessSupervisor:
         logger.info("Initializing Multiprocess Supervisor...")
         targets = {
             "Coordinator": run_coordinator_process,
-            "PMM_Engine": run_pmm_process,
+            # The pair market maker manages its own quotes and inventory and only runs
+            # inside app/main.py for now (it needs the same execution engine as the fills).
             "News_Engine": run_news_process,
             "OBI_Momentum_Engine": run_obi_momentum_process
         }

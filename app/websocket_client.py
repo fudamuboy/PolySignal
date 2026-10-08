@@ -2,13 +2,18 @@ import asyncio
 import json
 import time
 import websockets
+from collections import deque
 from .logger import logger
 from .config import WS_STALE_TIMEOUT, DATA_AGE_BLOCK_SECONDS
+
+TRADE_HISTORY_PER_TOKEN = 500
+
 
 class WebsocketClient:
     def __init__(self, uri="wss://ws-subscriptions-clob.polymarket.com/ws/market"):
         self.uri = uri
         self.cache = {} # token_id: {orderbook, price, timestamp}
+        self.trades = {}  # token_id: deque of recent fills {ts, price, size, side}
         self.subscriptions = set()
         self.running = False
         self._loop = None
@@ -125,6 +130,8 @@ class WebsocketClient:
 
     async def _handle_message(self, message):
         """Process incoming WS messages and update cache."""
+        if not isinstance(message, str) or message[:1] not in "[{":
+            return  # control frames such as PONG are not JSON
         try:
             raw_data = json.loads(message)
 
@@ -132,6 +139,8 @@ class WebsocketClient:
             data_list = raw_data if isinstance(raw_data, list) else [raw_data]
 
             for data in data_list:
+                if not isinstance(data, dict):
+                    continue
                 # Polymarket WS uses 'event_type' — NOT 'event' or 'type'
                 msg_type = (
                     data.get("event_type")
@@ -143,80 +152,105 @@ class WebsocketClient:
                 # Track per-type message counts for WS diagnostics
                 self._msg_type_counts[msg_type] = self._msg_type_counts.get(msg_type, 0) + 1
 
-                asset_id = data.get("asset_id")
+                touched = set()
 
-                if not asset_id:
-                    # price_changes messages may not have asset_id at top level
-                    # They are broadcast-style; skip for now (no per-token update)
-                    continue
-
-                if asset_id not in self.cache:
-                    self.cache[asset_id] = {"orderbook": {}, "price": 0, "last_update": 0}
-
-                now = asyncio.get_event_loop().time()
-
-                # ── Book snapshot (initial full book sent on subscribe) ──────
-                # Polymarket sends full bids/asks on first connect per token
-                bids = data.get("bids")
-                asks = data.get("asks")
-                if bids is not None:
-                    self.cache[asset_id]["orderbook"]["bids"] = bids
-                    self.cache[asset_id]["last_update"] = now
-                if asks is not None:
-                    self.cache[asset_id]["orderbook"]["asks"] = asks
-                    self.cache[asset_id]["last_update"] = now
-
-                # ── last_trade_price ─────────────────────────────────────────
-                ltp = data.get("last_trade_price")
-                if ltp:
-                    try:
-                        self.cache[asset_id]["price"] = float(ltp)
-                        self.cache[asset_id]["last_update"] = now
-                    except (ValueError, TypeError):
-                        pass
-
-                # ── price_changes (incremental book update messages) ─────────
-                # Format: [{"price": "0.55", "size": "100", "side": "BUY"}, ...]
+                # ── price_change: incremental book updates ───────────────────
+                # Each change carries its own asset_id (there is no top-level one):
+                # {"price_changes": [{"asset_id", "price", "size", "side", "best_bid", "best_ask"}, ...]}
                 price_changes = data.get("price_changes")
-                if price_changes and isinstance(price_changes, list):
-                    ob = self.cache[asset_id]["orderbook"]
-                    existing_bids = {str(b["price"]): b for b in ob.get("bids", []) if isinstance(b, dict)}
-                    existing_asks = {str(a["price"]): a for a in ob.get("asks", []) if isinstance(a, dict)}
+                if isinstance(price_changes, list):
                     for change in price_changes:
                         if not isinstance(change, dict):
                             continue
-                        price_str = str(change.get("price", ""))
-                        size      = change.get("size", "0")
-                        side      = change.get("side", "").upper()
-                        if side == "BUY":
-                            if float(size) == 0:
-                                existing_bids.pop(price_str, None)
-                            else:
-                                existing_bids[price_str] = {"price": price_str, "size": size}
-                        elif side == "SELL":
-                            if float(size) == 0:
-                                existing_asks.pop(price_str, None)
-                            else:
-                                existing_asks[price_str] = {"price": price_str, "size": size}
-                    ob["bids"] = list(existing_bids.values())
-                    ob["asks"] = list(existing_asks.values())
-                    self.cache[asset_id]["last_update"] = now
+                        asset_id = change.get("asset_id") or data.get("asset_id")
+                        if asset_id:
+                            self._apply_price_change(asset_id, change)
+                            touched.add(asset_id)
+
+                asset_id = data.get("asset_id")
+                if asset_id:
+                    entry = self._entry(asset_id)
+                    now = asyncio.get_event_loop().time()
+
+                    # ── book: full snapshot (on subscribe and after trades) ──
+                    bids = data.get("bids")
+                    asks = data.get("asks")
+                    if bids is not None:
+                        entry["orderbook"]["bids"] = bids
+                        entry["last_update"] = now
+                    if asks is not None:
+                        entry["orderbook"]["asks"] = asks
+                        entry["last_update"] = now
+                    if data.get("last_trade_price"):
+                        try:
+                            entry["price"] = float(data["last_trade_price"])
+                        except (ValueError, TypeError):
+                            pass
+
+                    # ── last_trade_price: an actual fill on the book ─────────
+                    # {"asset_id", "price", "size", "side", "timestamp", ...}
+                    if msg_type == "last_trade_price":
+                        try:
+                            trade = {
+                                "ts": time.time(),
+                                "price": float(data["price"]),
+                                "size": float(data.get("size") or 0),
+                                "side": str(data.get("side", "")).upper(),
+                            }
+                        except (KeyError, ValueError, TypeError):
+                            trade = None
+                        if trade:
+                            entry["price"] = trade["price"]
+                            entry["last_update"] = now
+                            self.trades.setdefault(asset_id, deque(maxlen=TRADE_HISTORY_PER_TOKEN)).append(trade)
+
+                    touched.add(asset_id)
 
                 # Sync to shared Redis cache for inter-process access
-                try:
-                    from .redis_manager import RedisManager
-                    rm = RedisManager()
-                    ob_data = self.cache[asset_id].get("orderbook")
-                    if ob_data:
-                        await rm.set_orderbook(asset_id, ob_data)
-                    price_val = self.cache[asset_id].get("price")
-                    if price_val:
-                        await rm.set_token_price(asset_id, price_val)
-                except Exception:
-                    pass
+                for tid in touched:
+                    try:
+                        from .redis_manager import RedisManager
+                        rm = RedisManager()
+                        ob_data = self.cache[tid].get("orderbook")
+                        if ob_data:
+                            await rm.set_orderbook(tid, ob_data)
+                        price_val = self.cache[tid].get("price")
+                        if price_val:
+                            await rm.set_token_price(tid, price_val)
+                    except Exception:
+                        pass
 
         except Exception as e:
             logger.error(f"Error handling WS message: {e}")
+
+    def _entry(self, asset_id):
+        if asset_id not in self.cache:
+            self.cache[asset_id] = {"orderbook": {}, "price": 0, "last_update": 0}
+        return self.cache[asset_id]
+
+    def _apply_price_change(self, asset_id, change):
+        """Apply one level update (size 0 removes the level)."""
+        entry = self._entry(asset_id)
+        ob = entry["orderbook"]
+        book_side = {"BUY": "bids", "SELL": "asks"}.get(str(change.get("side", "")).upper())
+        if not book_side:
+            return
+        price_str = str(change.get("price", ""))
+        try:
+            size = float(change.get("size", 0))
+        except (ValueError, TypeError):
+            return
+        levels = {str(l["price"]): l for l in ob.get(book_side, []) if isinstance(l, dict) and "price" in l}
+        if size == 0:
+            levels.pop(price_str, None)
+        else:
+            levels[price_str] = {"price": price_str, "size": str(change.get("size"))}
+        ob[book_side] = list(levels.values())
+        entry["last_update"] = asyncio.get_event_loop().time()
+
+    def get_trades_since(self, asset_id, since_ts):
+        """Trades printed on this token after since_ts (wall-clock seconds), oldest first."""
+        return [t for t in self.trades.get(asset_id, ()) if t["ts"] > since_ts]
 
     def get_cached_market(self, asset_id):
         """Retrieve data from cache if fresh."""

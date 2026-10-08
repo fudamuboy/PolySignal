@@ -3,6 +3,7 @@ import collections
 from .logger import logger
 from .database import Database
 from .paper_fill_model import get_tick_size
+from .config import PAIR_MM_STRATEGY
 
 class PositionManager:
     def __init__(self):
@@ -170,7 +171,8 @@ class PositionManager:
         self.db.update_position(
             token_id, 
             self.positions[token_id]['size'] if token_id in self.positions else 0,
-            self.positions[token_id]['avg_price'] if token_id in self.positions else 0
+            self.positions[token_id]['avg_price'] if token_id in self.positions else 0,
+            self.positions[token_id].get('strategy', 'Unknown') if token_id in self.positions else 'Unknown'
         )
         
         # Update categorized stats
@@ -274,6 +276,8 @@ class PositionManager:
         )
 
         for token_id, pos in list(self.positions.items()):
+            if pos.get('strategy') == PAIR_MM_STRATEGY:
+                continue  # inventory managed by the pair market maker (merge / unwind), not by SL/TP
             entry_price = pos.get('avg_price')
             size = pos.get('size')
             if entry_price is None or size is None:
